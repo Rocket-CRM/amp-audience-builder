@@ -29,6 +29,14 @@
 
     <!-- Content -->
     <div class="polaris-sidebar__content">
+      <!-- Debug: Show what we have -->
+      <div v-if="currentNodeType === 'condition'" style="background: #ffffcc; padding: 8px; margin-bottom: 8px; font-size: 11px; border: 1px solid #ccc;">
+        <strong>DEBUG:</strong><br>
+        Type: {{ currentNodeType }}<br>
+        Groups: {{ editingConfig?.groups?.length || 0 }}<br>
+        Config: {{ JSON.stringify(editingConfig).slice(0, 200) }}...
+      </div>
+      
       <!-- Node Type Configs -->
       <ConditionConfig
         v-if="currentNodeType === 'condition'"
