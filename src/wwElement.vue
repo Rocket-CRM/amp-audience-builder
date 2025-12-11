@@ -268,13 +268,27 @@ export default {
       return JSON.parse(JSON.stringify(obj));
     };
 
+    // Smart merge: don't override defaults with empty arrays
+    const smartMerge = (defaults, incoming) => {
+      const result = { ...deepClone(defaults) };
+      for (const key in incoming) {
+        const value = incoming[key];
+        // Skip empty arrays - keep defaults
+        if (Array.isArray(value) && value.length === 0) continue;
+        // Skip undefined/null
+        if (value === undefined || value === null) continue;
+        result[key] = deepClone(value);
+      }
+      return result;
+    };
+
     // Initialize editing config when selected node changes
     watch(selectedNodeData, (newData) => {
       if (newData && typeof newData === 'object' && newData.id) {
         const nodeType = newData.type || '';
         const nodeConfig = newData.data || {};
         const defaultConfig = getDefaultConfig(nodeType);
-        const mergedConfig = { ...deepClone(defaultConfig), ...deepClone(nodeConfig) };
+        const mergedConfig = smartMerge(defaultConfig, nodeConfig);
         
         editingConfig.value = mergedConfig;
         originalConfig.value = deepClone(mergedConfig);
@@ -391,7 +405,7 @@ export default {
         const nodeType = nodeData.type || '';
         const nodeConfig = nodeData.data || {};
         const defaultConfig = getDefaultConfig(nodeType);
-        const mergedConfig = { ...deepClone(defaultConfig), ...deepClone(nodeConfig) };
+        const mergedConfig = smartMerge(defaultConfig, nodeConfig);
         
         editingConfig.value = mergedConfig;
         originalConfig.value = deepClone(mergedConfig);
