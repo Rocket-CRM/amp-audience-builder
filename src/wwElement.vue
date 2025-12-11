@@ -38,12 +38,20 @@
       </div>
       
       <!-- Node Type Configs -->
-      <ConditionConfig
-        v-if="currentNodeType === 'condition'"
-        :config="editingConfig"
-        :collections="collectionsData"
-        @update="handleConfigUpdate"
-      />
+      <div v-if="currentNodeType === 'condition'">
+        <!-- Test: Simple inline content -->
+        <div style="background: #e0ffe0; padding: 12px; border: 1px solid #0a0; border-radius: 4px; margin-bottom: 8px;">
+          ✅ Condition block is rendering!<br>
+          Groups count: {{ editingConfig?.groups?.length || 0 }}
+        </div>
+        
+        <!-- Actual ConditionConfig -->
+        <ConditionConfig
+          :config="editingConfig"
+          :collections="collectionsData"
+          @update="handleConfigUpdate"
+        />
+      </div>
 
       <MessageConfig
         v-else-if="currentNodeType === 'message'"
