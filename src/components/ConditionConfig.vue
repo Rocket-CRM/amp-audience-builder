@@ -2,7 +2,7 @@
   <div class="polaris-card">
     <!-- Header -->
     <div class="polaris-card__section">
-      <div class="polaris-stack polaris-stack--horizontal polaris-stack--space-between polaris-stack--align-center">
+      <div class="polaris-inline polaris-inline--space-between">
         <h3 class="polaris-text polaris-text--heading-sm">Condition Builder</h3>
         <div class="polaris-button-group polaris-button-group--segmented">
           <button
@@ -28,7 +28,7 @@
       >
         <div class="polaris-card__section">
           <!-- Group Header -->
-          <div class="polaris-stack polaris-stack--horizontal polaris-stack--space-between polaris-stack--align-center">
+          <div class="polaris-inline polaris-inline--space-between">
             <span class="polaris-text polaris-text--body-md">Group {{ gIdx + 1 }}</span>
             <div class="polaris-button-group polaris-button-group--small">
               <button
@@ -129,7 +129,7 @@
           </div>
 
           <!-- Add Condition -->
-          <div class="polaris-stack polaris-stack--horizontal polaris-stack--tight" style="margin-top: var(--p-space-300);">
+          <div class="polaris-inline polaris-inline--gap-tight" style="margin-top: var(--p-space-300);">
             <button
               class="polaris-button polaris-button--outline polaris-button--slim"
               @click="addCondition(group?.id)"
@@ -147,7 +147,7 @@
       </div>
 
       <!-- Add Group -->
-      <div class="polaris-stack polaris-stack--horizontal" style="margin-top: var(--p-space-400);">
+      <div style="margin-top: var(--p-space-400);">
         <button
           class="polaris-button polaris-button--full-width"
           @click="addGroup"
@@ -410,12 +410,10 @@ export default {
   &__section { @include polaris-card-section; }
 }
 
-.polaris-stack {
-  @include polaris-stack;
-  &--horizontal { flex-direction: row; }
+.polaris-inline {
+  @include polaris-inline;
   &--space-between { justify-content: space-between; }
-  &--align-center { align-items: center; }
-  &--tight { gap: var(--p-space-200); }
+  &--gap-tight { gap: var(--p-space-200); }
 }
 
 .polaris-text {
