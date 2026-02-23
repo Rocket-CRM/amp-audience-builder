@@ -313,8 +313,8 @@ export default {
   height: 100%;
   font-family: var(--p-font-family-sans);
   color: var(--p-color-text);
-  background: var(--p-color-bg);
-  padding: var(--p-space-600);
+  background: var(--p-color-bg-surface-secondary);
+  padding: var(--p-space-600) var(--p-space-800);
   overflow-y: auto;
   box-sizing: border-box;
 }

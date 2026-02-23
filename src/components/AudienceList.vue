@@ -9,7 +9,7 @@
         </PolarisText>
       </div>
       <div class="list-header__actions">
-        <PolarisButton variant="plain" icon="arrowLeft" @click="$emit('refresh')">
+        <PolarisButton variant="plain" @click="$emit('refresh')">
           Refresh
         </PolarisButton>
         <PolarisButton variant="primary" @click="$emit('create')">
@@ -293,6 +293,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 300px;
+  background: var(--p-color-bg-surface);
+  border: 1px solid var(--p-color-border);
+  border-radius: var(--p-border-radius-200);
+  box-shadow: var(--p-shadow-card);
 }
 
 @media (max-width: 768px) {
