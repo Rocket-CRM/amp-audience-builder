@@ -1,31 +1,36 @@
 export default {
   editor: {
     label: {
-      en: 'Node Config Sidebar',
+      en: 'Audience Builder',
     },
-    icon: 'settings',
-    customStylePropertiesOrder: [
-      'panelWidth',
-    ],
+    icon: 'target',
     customSettingsPropertiesOrder: [
-      'selectedNodeData',
+      'audiences',
       'collections',
-      'messageTemplates',
-      'channels',
-      'objectives',
-      'availableActions',
+      'audienceMembers',
+      'audienceMembersTotal',
     ],
   },
   actions: [
     {
-      name: 'setNodeData',
-      label: { en: 'Set Node Data' },
-      action: 'setNodeData',
+      name: 'navigateToList',
+      label: { en: 'Navigate to List' },
+      action: 'navigateToList',
+      /* wwEditor:start */
+      actionDescription: {
+        en: 'Navigate to the audience list view',
+      },
+      /* wwEditor:end */
+    },
+    {
+      name: 'navigateToBuilder',
+      label: { en: 'Navigate to Builder' },
+      action: 'navigateToBuilder',
       args: [
         {
-          name: 'nodeData',
+          name: 'audienceData',
           type: 'Object',
-          label: { en: 'Node Data' },
+          label: { en: 'Audience Data (optional, for editing)' },
           /* wwEditor:start */
           bindable: true,
           /* wwEditor:end */
@@ -33,227 +38,143 @@ export default {
       ],
       /* wwEditor:start */
       actionDescription: {
-        en: 'Load a node for editing. Pass the full node object {id, type, position, data}',
+        en: 'Navigate to the audience builder. Pass audience data to edit an existing audience, or omit to create new.',
       },
       /* wwEditor:end */
     },
     {
-      name: 'clearNodeData',
-      label: { en: 'Clear / Close Sidebar' },
-      action: 'clearNodeData',
+      name: 'navigateToDetail',
+      label: { en: 'Navigate to Detail' },
+      action: 'navigateToDetail',
+      args: [
+        {
+          name: 'audienceId',
+          type: 'Text',
+          label: { en: 'Audience ID' },
+          /* wwEditor:start */
+          bindable: true,
+          /* wwEditor:end */
+        },
+      ],
       /* wwEditor:start */
       actionDescription: {
-        en: 'Clear the sidebar and close it',
-      },
-      /* wwEditor:end */
-    },
-    {
-      name: 'save',
-      label: { en: 'Save Config' },
-      action: 'save',
-      /* wwEditor:start */
-      actionDescription: {
-        en: 'Trigger save action. Emits config-saved event with {nodeId, config}',
-      },
-      /* wwEditor:end */
-    },
-    {
-      name: 'cancel',
-      label: { en: 'Cancel Changes' },
-      action: 'cancel',
-      /* wwEditor:start */
-      actionDescription: {
-        en: 'Cancel changes and reset to original config. Emits config-cancelled event',
-      },
-      /* wwEditor:end */
-    },
-    {
-      name: 'validate',
-      label: { en: 'Validate Config' },
-      action: 'validate',
-      /* wwEditor:start */
-      actionDescription: {
-        en: 'Run validation on current config. Updates isValid and validationErrors variables',
-      },
-      /* wwEditor:end */
-    },
-    {
-      name: 'getConfig',
-      label: { en: 'Get Current Config' },
-      action: 'getConfig',
-      /* wwEditor:start */
-      actionDescription: {
-        en: 'Returns the current editing config object',
+        en: 'Navigate to the audience detail/members view',
       },
       /* wwEditor:end */
     },
   ],
   triggerEvents: [
     {
-      name: 'config-saved',
-      label: { en: 'On Config Saved' },
-      event: { nodeId: '', config: {} },
+      name: 'create-audience',
+      label: { en: 'On Create Audience' },
+      event: { name: '', description: '', conditions: {} },
       default: true,
     },
     {
-      name: 'config-cancelled',
-      label: { en: 'On Config Cancelled' },
-      event: { nodeId: '' },
+      name: 'update-audience',
+      label: { en: 'On Update Audience' },
+      event: { audience_id: '', name: '', description: '', conditions: {} },
       default: true,
     },
     {
-      name: 'panel-closed',
-      label: { en: 'On Panel Closed' },
+      name: 'delete-audience',
+      label: { en: 'On Delete Audience' },
+      event: { audience_id: '' },
+      default: true,
+    },
+    {
+      name: 'activate-audience',
+      label: { en: 'On Activate Audience' },
+      event: { audience_id: '', run_backfill: true },
+      default: true,
+    },
+    {
+      name: 'deactivate-audience',
+      label: { en: 'On Deactivate Audience' },
+      event: { audience_id: '' },
+      default: true,
+    },
+    {
+      name: 'load-members',
+      label: { en: 'On Load Members' },
+      event: { audience_id: '', limit: 50, offset: 0, include_exited: false },
+      default: true,
+    },
+    {
+      name: 'refresh-audiences',
+      label: { en: 'On Refresh Audiences' },
       event: {},
       default: true,
     },
     {
-      name: 'validation-error',
-      label: { en: 'On Validation Error' },
-      event: { errors: [] },
-      default: true,
-    },
-    {
-      name: 'node-loaded',
-      label: { en: 'On Node Loaded' },
-      event: { nodeId: '', nodeType: '' },
+      name: 'view-changed',
+      label: { en: 'On View Changed' },
+      event: { view: '', audienceId: '' },
       default: true,
     },
   ],
   properties: {
-    // Settings Section
-    selectedNodeData: {
-      label: { en: 'Selected Node Data' },
+    audiences: {
+      label: { en: 'Audiences Data' },
       type: 'Info',
       section: 'settings',
       options: {
-        text: { en: 'Bind the selected node data from Workflow Builder' },
+        text: { en: 'Bind the audiences array from bff_list_audiences() → data' },
       },
       bindable: true,
-      defaultValue: {},
+      defaultValue: [],
       /* wwEditor:start */
       bindingValidation: {
-        type: 'object',
-        tooltip: 'Bind to WorkflowBuilder selectedNodeData variable. Structure: {id, type, position, data: {label, ...config}}',
+        type: 'array',
+        tooltip:
+          'Array of audience objects: [{id, name, description, is_active, member_count, conditions, created_at, updated_at}]',
       },
       /* wwEditor:end */
     },
     collections: {
-      label: { en: 'Available Collections' },
+      label: { en: 'Collections Data' },
       type: 'Info',
       section: 'settings',
       options: {
-        text: { en: 'Bind array of collections with fields' },
+        text: { en: 'Bind collections from bff_get_workflow_collections()' },
       },
       bindable: true,
       defaultValue: [],
       /* wwEditor:start */
       bindingValidation: {
         type: 'array',
-        tooltip: 'Array of collections: [{name, label, fields: [{name, label, type}]}]. Field types: string, number, boolean, date, array, uuid',
+        tooltip:
+          'Array of collections: [{name, label, fields: [{name, label, type}], has_aggregate, aggregate_fields: [{name, label, type}]}]',
       },
       /* wwEditor:end */
     },
-    messageTemplates: {
-      label: { en: 'Message Templates' },
+    audienceMembers: {
+      label: { en: 'Audience Members' },
       type: 'Info',
       section: 'settings',
       options: {
-        text: { en: 'Bind array of message templates' },
+        text: { en: 'Bind member data from bff_get_audience_members() → data' },
       },
       bindable: true,
       defaultValue: [],
       /* wwEditor:start */
       bindingValidation: {
         type: 'array',
-        tooltip: 'Array of message templates: [{id, name, channel, content}]',
+        tooltip:
+          'Array of member objects: [{user_id, user_name, phone, entered_at, exited_at}]',
       },
       /* wwEditor:end */
     },
-    channels: {
-      label: { en: 'Available Channels' },
-      type: 'Array',
+    audienceMembersTotal: {
+      label: { en: 'Members Total Count' },
+      type: 'Number',
       section: 'settings',
       bindable: true,
-      defaultValue: [
-        { value: 'email', label: 'Email' },
-        { value: 'sms', label: 'SMS' },
-        { value: 'push', label: 'Push Notification' },
-        { value: 'line', label: 'LINE' },
-      ],
-      options: {
-        expandable: true,
-        getItemLabel(item, index) {
-          return item?.label || item?.value || `Channel ${index + 1}`;
-        },
-        item: {
-          type: 'Object',
-          defaultValue: { value: '', label: '' },
-          options: {
-            item: {
-              value: {
-                label: { en: 'Value' },
-                type: 'Text',
-              },
-              label: {
-                label: { en: 'Label' },
-                type: 'Text',
-              },
-            },
-          },
-        },
-      },
+      defaultValue: 0,
       /* wwEditor:start */
       bindingValidation: {
-        type: 'array',
-        tooltip: 'Array of channels: [{value, label}]',
-      },
-      /* wwEditor:end */
-    },
-    objectives: {
-      label: { en: 'Agent Objectives' },
-      type: 'Info',
-      section: 'settings',
-      options: {
-        text: { en: 'Bind array of AI agent objectives' },
-      },
-      bindable: true,
-      defaultValue: [],
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'array',
-        tooltip: 'Array of objectives: [{value, label}]. Example: [{value: "engage", label: "Engage User"}, {value: "convert", label: "Convert to Purchase"}]',
-      },
-      /* wwEditor:end */
-    },
-    availableActions: {
-      label: { en: 'Available Agent Actions' },
-      type: 'Info',
-      section: 'settings',
-      options: {
-        text: { en: 'Bind array of actions the AI agent can take' },
-      },
-      bindable: true,
-      defaultValue: [],
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'array',
-        tooltip: 'Array of actions: [{value, label}]. Example: [{value: "send_message", label: "Send Message"}, {value: "apply_discount", label: "Apply Discount"}]',
-      },
-      /* wwEditor:end */
-    },
-
-    // Style Section
-    panelWidth: {
-      label: { en: 'Panel Width' },
-      type: 'Length',
-      section: 'style',
-      defaultValue: '360px',
-      bindable: true,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'string',
-        tooltip: 'CSS width value (e.g., 360px, 25vw)',
+        type: 'number',
+        tooltip: 'Total member count from bff_get_audience_members() → total',
       },
       /* wwEditor:end */
     },
