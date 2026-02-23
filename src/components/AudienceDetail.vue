@@ -72,21 +72,27 @@
           </PolarisButton>
 
           <!-- Delete with confirmation -->
-          <template v-if="showDeleteConfirm">
-            <PolarisBanner variant="critical" dismissible @dismiss="showDeleteConfirm = false">
-              <template v-if="audience?.is_active">
-                Deactivate the audience before deleting.
-              </template>
-              <template v-else>
-                Are you sure you want to delete this audience? This cannot be undone.
-                <template #actions>
-                  <PolarisButton variant="critical" size="slim" @click="handleDeleteConfirm">
-                    Yes, delete
-                  </PolarisButton>
-                </template>
-              </template>
-            </PolarisBanner>
-          </template>
+          <PolarisBanner
+            v-if="showDeleteConfirm && audience?.is_active"
+            variant="critical"
+            dismissible
+            @dismiss="showDeleteConfirm = false"
+          >
+            Deactivate the audience before deleting.
+          </PolarisBanner>
+          <PolarisBanner
+            v-else-if="showDeleteConfirm"
+            variant="critical"
+            dismissible
+            @dismiss="showDeleteConfirm = false"
+          >
+            Are you sure you want to delete this audience? This cannot be undone.
+            <template #actions>
+              <PolarisButton variant="critical" size="slim" @click="handleDeleteConfirm">
+                Yes, delete
+              </PolarisButton>
+            </template>
+          </PolarisBanner>
           <PolarisButton
             v-else
             variant="critical"
