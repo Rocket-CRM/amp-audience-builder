@@ -12,6 +12,8 @@ export default {
       'collections',
       'messageTemplates',
       'channels',
+      'objectives',
+      'availableActions',
     ],
   },
   actions: [
@@ -205,6 +207,38 @@ export default {
       bindingValidation: {
         type: 'array',
         tooltip: 'Array of channels: [{value, label}]',
+      },
+      /* wwEditor:end */
+    },
+    objectives: {
+      label: { en: 'Agent Objectives' },
+      type: 'Info',
+      section: 'settings',
+      options: {
+        text: { en: 'Bind array of AI agent objectives' },
+      },
+      bindable: true,
+      defaultValue: [],
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'array',
+        tooltip: 'Array of objectives: [{value, label}]. Example: [{value: "engage", label: "Engage User"}, {value: "convert", label: "Convert to Purchase"}]',
+      },
+      /* wwEditor:end */
+    },
+    availableActions: {
+      label: { en: 'Available Agent Actions' },
+      type: 'Info',
+      section: 'settings',
+      options: {
+        text: { en: 'Bind array of actions the AI agent can take' },
+      },
+      bindable: true,
+      defaultValue: [],
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'array',
+        tooltip: 'Array of actions: [{value, label}]. Example: [{value: "send_message", label: "Send Message"}, {value: "apply_discount", label: "Apply Discount"}]',
       },
       /* wwEditor:end */
     },

@@ -29,29 +29,13 @@
 
     <!-- Content -->
     <div class="polaris-sidebar__content">
-      <!-- Debug: Show what we have -->
-      <div v-if="currentNodeType === 'condition'" style="background: #ffffcc; padding: 8px; margin-bottom: 8px; font-size: 11px; border: 1px solid #ccc;">
-        <strong>DEBUG:</strong><br>
-        Type: {{ currentNodeType }}<br>
-        Groups: {{ editingConfig?.groups?.length || 0 }}<br>
-        Config: {{ JSON.stringify(editingConfig).slice(0, 200) }}...
-      </div>
-      
       <!-- Node Type Configs -->
-      <div v-if="currentNodeType === 'condition'">
-        <!-- Test: Simple inline content -->
-        <div style="background: #e0ffe0; padding: 12px; border: 1px solid #0a0; border-radius: 4px; margin-bottom: 8px;">
-          ✅ Condition block is rendering!<br>
-          Groups count: {{ editingConfig?.groups?.length || 0 }}
-        </div>
-        
-        <!-- Actual ConditionConfig -->
-        <ConditionConfig
-          :config="editingConfig"
-          :collections="collectionsData"
-          @update="handleConfigUpdate"
-        />
-      </div>
+      <ConditionConfig
+        v-if="currentNodeType === 'condition'"
+        :config="editingConfig"
+        :collections="collectionsData"
+        @update="handleConfigUpdate"
+      />
 
       <MessageConfig
         v-else-if="currentNodeType === 'message'"
@@ -70,6 +54,14 @@
       <ApiConfig
         v-else-if="currentNodeType === 'api'"
         :config="editingConfig"
+        @update="handleConfigUpdate"
+      />
+
+      <AgentConfig
+        v-else-if="currentNodeType === 'agent'"
+        :config="editingConfig"
+        :objectives="objectivesData"
+        :availableActions="availableActionsData"
         @update="handleConfigUpdate"
       />
 
@@ -95,6 +87,7 @@
           <span class="polaris-badge polaris-badge--info">✉️ Message</span>
           <span class="polaris-badge polaris-badge--default">⏱️ Wait</span>
           <span class="polaris-badge polaris-badge--success">🔌 API</span>
+          <span class="polaris-badge polaris-badge--info">🤖 Agent</span>
         </div>
       </div>
 
@@ -126,6 +119,7 @@ import ConditionConfig from './components/ConditionConfig.vue';
 import MessageConfig from './components/MessageConfig.vue';
 import WaitConfig from './components/WaitConfig.vue';
 import ApiConfig from './components/ApiConfig.vue';
+import AgentConfig from './components/AgentConfig.vue';
 
 export default {
   components: {
@@ -133,6 +127,7 @@ export default {
     MessageConfig,
     WaitConfig,
     ApiConfig,
+    AgentConfig,
   },
   props: {
     uid: { type: String, required: true },
@@ -149,6 +144,7 @@ export default {
       message: 'Message',
       wait: 'Wait',
       api: 'API Call',
+      agent: 'AI Agent',
     };
 
     const nodeTypeIcons = {
@@ -156,6 +152,7 @@ export default {
       message: '✉️',
       wait: '⏱️',
       api: '🔌',
+      agent: '🤖',
     };
 
     // Default configs per node type
@@ -198,6 +195,20 @@ export default {
           body: null,
           timeout_seconds: 30,
           retry_count: 0,
+        },
+        agent: {
+          label: 'AI Agent',
+          objective: '',
+          tone: 'friendly',
+          allowed_actions: [],
+          max_points_per_user: null,
+          max_points_scope: 'per_execution',
+          max_points_period: 'day',
+          max_actions_per_execution: null,
+          max_actions_scope: 'per_execution',
+          max_actions_period: 'day',
+          context_hint: '',
+          output_variables: [],
         },
       };
       return configs[nodeType] || {};
@@ -248,6 +259,8 @@ export default {
     const collectionsData = computed(() => props.content?.collections || []);
     const channelsData = computed(() => props.content?.channels || []);
     const messageTemplatesData = computed(() => props.content?.messageTemplates || []);
+    const objectivesData = computed(() => props.content?.objectives || []);
+    const availableActionsData = computed(() => props.content?.availableActions || []);
     const panelWidth = computed(() => props.content?.panelWidth || '360px');
     const currentNodeType = computed(() => currentNodeTypeVar.value || '');
 
@@ -386,6 +399,13 @@ export default {
         if (!config?.url) {
           errors.push('URL is required');
         }
+      } else if (nodeType === 'agent') {
+        if (!config?.objective) {
+          errors.push('Objective is required');
+        }
+        if (!config?.tone) {
+          errors.push('Tone is required');
+        }
       }
 
       setValidationErrors(errors);
@@ -478,6 +498,8 @@ export default {
       collectionsData,
       channelsData,
       messageTemplatesData,
+      objectivesData,
+      availableActionsData,
       currentNodeType,
       // Computed
       shouldShowPanel,
@@ -546,6 +568,7 @@ export default {
   &--message { background: var(--p-color-bg-fill-info-secondary); }
   &--wait { background: #e0e7ff; }
   &--api { background: var(--p-color-bg-fill-success-secondary); }
+  &--agent { background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); }
 }
 
 .polaris-sidebar__header-info {
