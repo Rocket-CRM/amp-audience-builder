@@ -67,37 +67,37 @@ export default {
     {
       name: 'create-audience',
       label: { en: 'On Create Audience' },
-      event: { name: '', description: '', conditions: {} },
+      event: { p_name: '', p_description: '', p_conditions: {} },
       default: true,
     },
     {
       name: 'update-audience',
       label: { en: 'On Update Audience' },
-      event: { audience_id: '', name: '', description: '', conditions: {} },
+      event: { p_audience_id: '', p_name: '', p_description: '', p_conditions: {} },
       default: true,
     },
     {
       name: 'delete-audience',
       label: { en: 'On Delete Audience' },
-      event: { audience_id: '' },
+      event: { p_audience_id: '' },
       default: true,
     },
     {
       name: 'activate-audience',
       label: { en: 'On Activate Audience' },
-      event: { audience_id: '', run_backfill: true },
+      event: { p_audience_id: '', p_run_backfill: true },
       default: true,
     },
     {
       name: 'deactivate-audience',
       label: { en: 'On Deactivate Audience' },
-      event: { audience_id: '' },
+      event: { p_audience_id: '' },
       default: true,
     },
     {
       name: 'load-members',
       label: { en: 'On Load Members' },
-      event: { audience_id: '', limit: 50, offset: 0, include_exited: false },
+      event: { p_audience_id: '', p_limit: 50, p_offset: 0, p_include_exited: false },
       default: true,
     },
     {
@@ -161,7 +161,7 @@ export default {
       bindingValidation: {
         type: 'array',
         tooltip:
-          'Array of member objects: [{user_id, user_name, phone, entered_at, exited_at}]',
+          'Array of member objects: [{user_id, full_name, phone_number, entered_at, exited_at}]',
       },
       /* wwEditor:end */
     },

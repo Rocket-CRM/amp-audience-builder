@@ -236,10 +236,10 @@ export default {
       emit('trigger-event', {
         name: 'load-members',
         event: {
-          audience_id: params?.audience_id || selectedAudienceId.value,
-          limit: params?.limit || 50,
-          offset: params?.offset || 0,
-          include_exited: params?.include_exited || false,
+          p_audience_id: params?.audience_id || selectedAudienceId.value,
+          p_limit: params?.limit || 50,
+          p_offset: params?.offset || 0,
+          p_include_exited: params?.include_exited || false,
         },
       });
     };

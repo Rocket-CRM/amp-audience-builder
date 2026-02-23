@@ -59,16 +59,24 @@
             <td class="col-actions">
               <!-- Confirm Delete Inline -->
               <div v-if="confirmDeleteId === audience?.id" class="confirm-inline">
-                <PolarisText variant="bodySm" color="critical">Delete this audience?</PolarisText>
-                <PolarisButton variant="critical" size="slim" @click="confirmDelete(audience)">
-                  Yes, delete
-                </PolarisButton>
-                <PolarisButton size="slim" @click="confirmDeleteId = null">Cancel</PolarisButton>
+                <template v-if="audience?.is_active">
+                  <PolarisText variant="bodySm" color="critical">Deactivate the audience before deleting.</PolarisText>
+                  <PolarisButton size="slim" @click="confirmDeleteId = null">OK</PolarisButton>
+                </template>
+                <template v-else>
+                  <PolarisText variant="bodySm" color="critical">Delete this audience? This cannot be undone.</PolarisText>
+                  <PolarisButton variant="critical" size="slim" @click="confirmDelete(audience)">
+                    Yes, delete
+                  </PolarisButton>
+                  <PolarisButton size="slim" @click="confirmDeleteId = null">Cancel</PolarisButton>
+                </template>
               </div>
               <!-- Confirm Activate Inline -->
               <div v-else-if="confirmActivateId === audience?.id" class="confirm-inline">
                 <PolarisText variant="bodySm">
-                  {{ audience?.is_active ? 'Deactivate?' : 'Activate and evaluate all users?' }}
+                  {{ audience?.is_active
+                    ? 'Deactivate this audience? Existing members will remain.'
+                    : 'Activate and run backfill? This will evaluate all existing users and add qualifying members.' }}
                 </PolarisText>
                 <PolarisButton variant="primary" size="slim" @click="confirmToggle(audience)">
                   Confirm
@@ -86,7 +94,6 @@
                 <PolarisButton
                   variant="plain"
                   size="slim"
-                  :disabled="audience?.is_active"
                   @click="confirmDeleteId = audience?.id"
                 >
                   Delete

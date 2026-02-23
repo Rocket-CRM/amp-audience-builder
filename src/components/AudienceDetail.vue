@@ -50,8 +50,8 @@
           <template v-if="showActivateConfirm">
             <PolarisBanner :variant="audience?.is_active ? 'warning' : 'info'" dismissible @dismiss="showActivateConfirm = false">
               {{ audience?.is_active
-                ? 'Deactivating will stop evaluating new users. Existing members remain.'
-                : 'This will evaluate all existing users and add qualifying members. Continue?' }}
+                ? 'Deactivating will stop evaluating new users. Existing members will remain.'
+                : 'This will activate the audience and run a backfill — evaluating all existing users against the conditions and adding qualifying members. Continue?' }}
               <template #actions>
                 <PolarisButton
                   :variant="audience?.is_active ? 'critical' : 'primary'"
@@ -74,18 +74,22 @@
           <!-- Delete with confirmation -->
           <template v-if="showDeleteConfirm">
             <PolarisBanner variant="critical" dismissible @dismiss="showDeleteConfirm = false">
-              Are you sure you want to delete this audience? This cannot be undone.
-              <template #actions>
-                <PolarisButton variant="critical" size="slim" @click="handleDeleteConfirm">
-                  Yes, delete
-                </PolarisButton>
+              <template v-if="audience?.is_active">
+                Deactivate the audience before deleting.
+              </template>
+              <template v-else>
+                Are you sure you want to delete this audience? This cannot be undone.
+                <template #actions>
+                  <PolarisButton variant="critical" size="slim" @click="handleDeleteConfirm">
+                    Yes, delete
+                  </PolarisButton>
+                </template>
               </template>
             </PolarisBanner>
           </template>
           <PolarisButton
             v-else
             variant="critical"
-            :disabled="audience?.is_active"
             @click="showDeleteConfirm = true"
           >
             Delete
@@ -117,8 +121,8 @@
           </thead>
           <tbody>
             <tr v-for="member in safeMembers" :key="member?.user_id">
-              <td>{{ member?.user_name || member?.user_id || '—' }}</td>
-              <td>{{ member?.phone || '—' }}</td>
+              <td>{{ member?.full_name || member?.user_id || '—' }}</td>
+              <td>{{ member?.phone_number || '—' }}</td>
               <td>{{ formatDate(member?.entered_at) }}</td>
               <td v-if="includeExited">
                 <PolarisBadge v-if="member?.exited_at" variant="default">
