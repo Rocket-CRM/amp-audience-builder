@@ -391,8 +391,7 @@ export default {
 .group-card {
   background: var(--p-color-bg-surface);
   border: 1px solid var(--p-color-border);
-  border-radius: var(--p-border-radius-200);
-  box-shadow: var(--p-shadow-card);
+  border-radius: var(--p-border-radius-300);
 }
 
 .group-card__header {
@@ -402,7 +401,7 @@ export default {
   padding: var(--p-space-300) var(--p-space-400);
   border-bottom: 1px solid var(--p-color-border);
   background: var(--p-color-bg-surface-secondary);
-  border-radius: var(--p-border-radius-200) var(--p-border-radius-200) 0 0;
+  border-radius: var(--p-border-radius-300) var(--p-border-radius-300) 0 0;
 }
 
 .group-card__header-left {
@@ -452,6 +451,12 @@ export default {
   display: flex;
   gap: var(--p-space-200);
   align-items: flex-end;
+
+  :deep(select),
+  :deep(input:not([type="checkbox"]):not([type="radio"])) {
+    height: 36px;
+    box-sizing: border-box;
+  }
 }
 
 .condition-field {
@@ -477,6 +482,17 @@ export default {
   display: flex;
   gap: var(--p-space-300);
   align-items: flex-end;
+
+  :deep(select),
+  :deep(input:not([type="checkbox"]):not([type="radio"])) {
+    height: 36px;
+    box-sizing: border-box;
+  }
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
 }
 
 @media (max-width: 640px) {

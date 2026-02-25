@@ -23,12 +23,12 @@
       <table class="list-table">
         <thead>
           <tr>
-            <th class="col-name">Name</th>
+            <th class="col-name th-first">Name</th>
             <th class="col-desc">Description</th>
             <th class="col-status">Status</th>
             <th class="col-members">Members</th>
             <th class="col-date">Created</th>
-            <th class="col-actions">Actions</th>
+            <th class="col-actions th-last">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -192,6 +192,8 @@ export default {
   flex-direction: column;
   gap: var(--p-space-400);
   height: 100%;
+  background: transparent;
+  padding: 0 var(--p-space-500);
 }
 
 .list-header {
@@ -200,6 +202,7 @@ export default {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--p-space-300);
+  background: transparent;
 }
 
 .list-header__title {
@@ -216,9 +219,8 @@ export default {
 .list-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--p-color-border);
-  border-radius: var(--p-border-radius-200);
+  border-radius: var(--p-border-radius-300);
   background: var(--p-color-bg-surface);
-  box-shadow: var(--p-shadow-card);
 }
 
 .list-table {
@@ -241,6 +243,14 @@ export default {
     border-bottom: 1px solid var(--p-color-border);
     text-transform: uppercase;
     letter-spacing: 0.3px;
+  }
+
+  .th-first {
+    border-top-left-radius: var(--p-border-radius-300);
+  }
+
+  .th-last {
+    border-top-right-radius: var(--p-border-radius-300);
   }
 
   td {
@@ -303,11 +313,14 @@ export default {
   min-height: 300px;
   background: var(--p-color-bg-surface);
   border: 1px solid var(--p-color-border);
-  border-radius: var(--p-border-radius-200);
-  box-shadow: var(--p-shadow-card);
+  border-radius: var(--p-border-radius-300);
 }
 
 @media (max-width: 768px) {
+  .audience-list {
+    padding: 0;
+  }
+
   .list-header {
     flex-direction: column;
     align-items: flex-start;

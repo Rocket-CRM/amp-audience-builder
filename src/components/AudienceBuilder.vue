@@ -23,71 +23,77 @@
       </ul>
     </PolarisBanner>
 
-    <!-- Name & Description -->
-    <PolarisCard sectioned>
-      <PolarisBlockStack gap="400">
-        <PolarisTextField
-          label="Audience name"
-          :modelValue="name"
-          @update:modelValue="name = $event"
-          required
-          placeholder="e.g. High-Value Customers"
-          :error="nameError"
-        />
-        <PolarisTextField
-          label="Description"
-          :modelValue="description"
-          @update:modelValue="description = $event"
-          multiline
-          :rows="2"
-          placeholder="Describe who belongs in this audience..."
-        />
-      </PolarisBlockStack>
-    </PolarisCard>
-
-    <!-- Condition Builder -->
-    <div class="condition-builder-section">
-      <div class="condition-builder-header">
-        <div>
-          <PolarisText variant="headingMd">Conditions</PolarisText>
-          <PolarisText variant="bodySm" color="subdued">
-            Users must satisfy ALL groups below to qualify for this audience.
-          </PolarisText>
-        </div>
-      </div>
-
-      <!-- Condition Groups -->
-      <div class="condition-groups">
-        <template v-for="(group, idx) in conditionGroups" :key="group.id">
-          <div v-if="idx > 0" class="and-connector">
-            <div class="and-connector__line"></div>
-            <span class="and-connector__badge">AND</span>
-            <div class="and-connector__line"></div>
-          </div>
-          <ConditionGroupCard
-            :group="group"
-            :collections="safeCollections"
-            :groupIndex="idx"
-            @update="updateGroup(idx, $event)"
-            @remove="removeGroup(idx)"
+    <div class="builder-content">
+      <!-- Name & Description Card -->
+      <PolarisCard sectioned>
+        <PolarisBlockStack gap="400">
+          <PolarisTextField
+            label="Audience name"
+            :modelValue="name"
+            @update:modelValue="name = $event"
+            required
+            placeholder="e.g. High-Value Customers"
+            :error="nameError"
           />
-        </template>
-      </div>
+          <PolarisTextField
+            label="Description"
+            :modelValue="description"
+            @update:modelValue="description = $event"
+            multiline
+            :rows="2"
+            placeholder="Describe who belongs in this audience..."
+          />
+        </PolarisBlockStack>
+      </PolarisCard>
 
-      <!-- Empty state for no groups -->
-      <PolarisEmptyState
-        v-if="!conditionGroups.length"
-        heading="No conditions defined"
-        icon="🎯"
-        compact
-      >
-        Add at least one condition group to define who belongs in this audience.
-      </PolarisEmptyState>
+      <!-- Conditions Card -->
+      <PolarisCard>
+        <PolarisCardSection>
+          <PolarisBlockStack gap="100">
+            <PolarisText variant="headingMd">Conditions</PolarisText>
+            <PolarisText variant="bodySm" color="subdued">
+              Users must satisfy ALL groups below to qualify for this audience.
+            </PolarisText>
+          </PolarisBlockStack>
+        </PolarisCardSection>
 
-      <!-- Add Group Button -->
-      <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
-        Add condition group
-      </PolarisButton>
+        <PolarisCardSection>
+          <div class="condition-builder-area">
+            <!-- Condition Groups -->
+            <div v-if="conditionGroups.length" class="condition-groups">
+              <template v-for="(group, idx) in conditionGroups" :key="group.id">
+                <div v-if="idx > 0" class="and-connector">
+                  <div class="and-connector__line"></div>
+                  <span class="and-connector__badge">AND</span>
+                  <div class="and-connector__line"></div>
+                </div>
+                <ConditionGroupCard
+                  :group="group"
+                  :collections="safeCollections"
+                  :groupIndex="idx"
+                  @update="updateGroup(idx, $event)"
+                  @remove="removeGroup(idx)"
+                />
+              </template>
+            </div>
+
+            <!-- Empty state for no groups -->
+            <PolarisEmptyState
+              v-if="!conditionGroups.length"
+              heading="No conditions defined"
+              icon="🎯"
+              compact
+            >
+              Add at least one condition group to define who belongs in this audience.
+            </PolarisEmptyState>
+
+            <!-- Add Group Button -->
+            <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
+              Add condition group
+            </PolarisButton>
+          </div>
+        </PolarisCardSection>
+      </PolarisCard>
     </div>
 
     <!-- Footer -->
@@ -106,6 +112,7 @@ import {
   PolarisText,
   PolarisButton,
   PolarisCard,
+  PolarisCardSection,
   PolarisBlockStack,
   PolarisTextField,
   PolarisBanner,
@@ -119,6 +126,7 @@ export default {
     PolarisText,
     PolarisButton,
     PolarisCard,
+    PolarisCardSection,
     PolarisBlockStack,
     PolarisTextField,
     PolarisBanner,
@@ -306,18 +314,26 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--p-space-300);
+  padding-bottom: var(--p-space-300);
+  border-bottom: 1px solid var(--p-color-border);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
 }
 
-.condition-builder-section {
+.builder-content {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
 }
 
-.condition-builder-header {
+.condition-builder-area {
   display: flex;
   flex-direction: column;
-  gap: var(--p-space-100);
+  gap: var(--p-space-400);
+  background: var(--p-color-bg-surface-secondary);
+  padding: var(--p-space-400);
+  border-radius: var(--p-border-radius-200);
+  margin: calc(-1 * var(--p-space-400));
+  margin-top: 0;
 }
 
 .condition-groups {
@@ -343,7 +359,7 @@ export default {
   font-size: var(--p-font-size-300);
   font-weight: var(--p-font-weight-semibold);
   color: var(--p-color-text-secondary);
-  background: var(--p-color-bg-surface-secondary);
+  background: var(--p-color-bg-surface);
   padding: var(--p-space-100) var(--p-space-300);
   border-radius: var(--p-border-radius-full);
   border: 1px solid var(--p-color-border);
@@ -371,5 +387,10 @@ export default {
   li:last-child {
     margin-bottom: 0;
   }
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
 }
 </style>

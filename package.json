@@ -9,6 +9,6 @@
     "@weweb/cli": "latest"
   },
   "dependencies": {
-    "polaris-weweb-styles": "^2.0.0"
+    "polaris-weweb-styles": "^2.1.0"
   }
 }
