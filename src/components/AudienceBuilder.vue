@@ -2,12 +2,20 @@
   <div class="audience-builder-form">
     <!-- Header -->
     <div class="builder-header">
-      <PolarisButton variant="plain" icon="arrowLeft" @click="handleCancel">
-        Back
-      </PolarisButton>
-      <PolarisText variant="headingLg">
-        {{ isEditing ? 'Edit Audience' : 'Create Audience' }}
-      </PolarisText>
+      <div class="builder-header__left">
+        <PolarisButton variant="plain" icon="arrowLeft" @click="handleCancel">
+          Back
+        </PolarisButton>
+        <PolarisText variant="headingLg">
+          {{ isEditing ? 'Edit Audience' : 'Create Audience' }}
+        </PolarisText>
+      </div>
+      <div class="builder-header__right">
+        <PolarisButton @click="handleCancel">Cancel</PolarisButton>
+        <PolarisButton variant="primary" @click="handleSave" :loading="isSaving">
+          {{ isEditing ? 'Update Audience' : 'Create Audience' }}
+        </PolarisButton>
+      </div>
     </div>
 
     <!-- Validation Errors -->
@@ -48,15 +56,10 @@
 
       <!-- Conditions Card -->
       <PolarisCard>
-        <PolarisCardSection>
-          <PolarisBlockStack gap="100">
-            <PolarisText variant="headingMd">Conditions</PolarisText>
-            <PolarisText variant="bodySm" color="subdued">
-              Users must satisfy ALL groups below to qualify for this audience.
-            </PolarisText>
-          </PolarisBlockStack>
-        </PolarisCardSection>
-
+        <PolarisCardHeader
+          title="Conditions"
+          description="Users must satisfy ALL groups below to qualify for this audience."
+        />
         <PolarisCardSection>
           <div class="condition-builder-area">
             <!-- Condition Groups -->
@@ -96,8 +99,8 @@
       </PolarisCard>
     </div>
 
-    <!-- Footer -->
-    <div class="builder-footer">
+    <!-- Sticky footer for mobile -->
+    <div class="builder-footer-mobile">
       <PolarisButton @click="handleCancel">Cancel</PolarisButton>
       <PolarisButton variant="primary" @click="handleSave" :loading="isSaving">
         {{ isEditing ? 'Update Audience' : 'Create Audience' }}
@@ -112,6 +115,7 @@ import {
   PolarisText,
   PolarisButton,
   PolarisCard,
+  PolarisCardHeader,
   PolarisCardSection,
   PolarisBlockStack,
   PolarisTextField,
@@ -126,6 +130,7 @@ export default {
     PolarisText,
     PolarisButton,
     PolarisCard,
+    PolarisCardHeader,
     PolarisCardSection,
     PolarisBlockStack,
     PolarisTextField,
@@ -313,10 +318,24 @@ export default {
 .builder-header {
   display: flex;
   align-items: center;
-  gap: var(--p-space-300);
-  padding-bottom: var(--p-space-300);
+  justify-content: space-between;
+  padding: var(--p-space-300) var(--p-space-600);
+  margin: calc(-1 * var(--p-space-600)) calc(-1 * var(--p-space-800)) 0;
+  background: var(--p-color-bg-surface);
   border-bottom: 1px solid var(--p-color-border);
   box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.builder-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-300);
+}
+
+.builder-header__right {
+  display: flex;
+  gap: var(--p-space-200);
 }
 
 .builder-content {
@@ -368,12 +387,27 @@ export default {
   white-space: nowrap;
 }
 
-.builder-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--p-space-200);
-  padding-top: var(--p-space-400);
-  border-top: 1px solid var(--p-color-border);
+.builder-footer-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .builder-header__right {
+    display: none;
+  }
+
+  .builder-footer-mobile {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--p-space-200);
+    padding-top: var(--p-space-400);
+    border-top: 1px solid var(--p-color-border);
+  }
+
+  .builder-header {
+    margin: calc(-1 * var(--p-space-400)) calc(-1 * var(--p-space-400)) 0;
+    padding: var(--p-space-300) var(--p-space-400);
+  }
 }
 
 .error-list {
@@ -389,8 +423,4 @@ export default {
   }
 }
 
-input[type="radio"],
-input[type="checkbox"] {
-  accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
-}
 </style>

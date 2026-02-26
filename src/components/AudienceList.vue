@@ -23,12 +23,12 @@
       <table class="list-table">
         <thead>
           <tr>
-            <th class="col-name th-first">Name</th>
+            <th class="col-name th--first">Name</th>
             <th class="col-desc">Description</th>
             <th class="col-status">Status</th>
             <th class="col-members">Members</th>
             <th class="col-date">Created</th>
-            <th class="col-actions th-last">Actions</th>
+            <th class="col-actions th--last">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -226,7 +226,7 @@ export default {
 .list-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--p-font-size-350);
+  font-size: var(--p-font-size-325);
 
   th,
   td {
@@ -238,18 +238,18 @@ export default {
   th {
     font-weight: var(--p-font-weight-semibold);
     color: var(--p-color-text-secondary);
-    font-size: var(--p-font-size-300);
+    font-size: var(--p-font-size-275);
     background: var(--p-color-bg-surface-secondary);
     border-bottom: 1px solid var(--p-color-border);
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
   }
 
-  .th-first {
+  .th--first {
     border-top-left-radius: var(--p-border-radius-300);
   }
 
-  .th-last {
+  .th--last {
     border-top-right-radius: var(--p-border-radius-300);
   }
 

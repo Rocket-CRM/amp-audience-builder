@@ -2,32 +2,27 @@
   <div class="audience-detail">
     <!-- Header -->
     <div class="detail-header">
-      <PolarisButton variant="plain" icon="arrowLeft" @click="$emit('back')">
-        Back to list
-      </PolarisButton>
+      <div class="detail-header__left">
+        <PolarisButton variant="plain" icon="arrowLeft" @click="$emit('back')">
+          Back
+        </PolarisButton>
+        <PolarisText variant="headingLg">{{ audience?.name || 'Audience Detail' }}</PolarisText>
+        <PolarisBadge :variant="audience?.is_active ? 'success' : 'default'">
+          {{ audience?.is_active ? 'Active' : 'Inactive' }}
+        </PolarisBadge>
+      </div>
+      <div class="detail-header__right">
+        <PolarisButton @click="$emit('edit', audience)">Edit</PolarisButton>
+      </div>
     </div>
 
     <div class="detail-content">
-      <!-- Info Card -->
+      <!-- Overview Card -->
       <PolarisCard>
         <PolarisCardSection>
-          <div class="detail-info-header">
-            <div class="detail-info-left">
-              <PolarisText variant="headingLg">{{ audience?.name || 'Untitled' }}</PolarisText>
-              <PolarisText v-if="audience?.description" variant="bodySm" color="subdued">
-                {{ audience?.description }}
-              </PolarisText>
-            </div>
-            <PolarisBadge :variant="audience?.is_active ? 'success' : 'default'">
-              {{ audience?.is_active ? 'Active' : 'Inactive' }}
-            </PolarisBadge>
-          </div>
-        </PolarisCardSection>
-      </PolarisCard>
-
-      <!-- Stats Card -->
-      <PolarisCard>
-        <PolarisCardSection>
+          <PolarisText v-if="audience?.description" variant="bodyMd" color="subdued">
+            {{ audience?.description }}
+          </PolarisText>
           <div class="detail-stats">
             <div class="stat-item">
               <PolarisText variant="bodySm" color="subdued">Members</PolarisText>
@@ -50,8 +45,6 @@
         <PolarisCardSection>
           <PolarisBlockStack gap="300">
             <PolarisInline gap="200">
-              <PolarisButton @click="$emit('edit', audience)">Edit audience</PolarisButton>
-
               <PolarisButton
                 v-if="!showActivateConfirm"
                 :variant="audience?.is_active ? 'outline' : 'primary'"
@@ -129,11 +122,11 @@
           <table class="members-table">
             <thead>
               <tr>
-                <th class="th-first">User</th>
+                <th class="th--first">User</th>
                 <th>Phone</th>
                 <th>Entered</th>
-                <th v-if="includeExited" class="th-last">Exited</th>
-                <th v-else class="th-last"></th>
+                <th v-if="includeExited" class="th--last">Exited</th>
+                <th v-else class="th--last"></th>
               </tr>
             </thead>
             <tbody>
@@ -306,28 +299,30 @@ export default {
 .detail-header {
   display: flex;
   align-items: center;
-  padding-bottom: var(--p-space-300);
+  justify-content: space-between;
+  padding: var(--p-space-300) var(--p-space-600);
+  margin: calc(-1 * var(--p-space-600)) calc(-1 * var(--p-space-800)) 0;
+  background: var(--p-color-bg-surface);
   border-bottom: 1px solid var(--p-color-border);
   box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.detail-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-300);
+}
+
+.detail-header__right {
+  display: flex;
+  gap: var(--p-space-200);
 }
 
 .detail-content {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
-}
-
-.detail-info-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--p-space-400);
-}
-
-.detail-info-left {
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-space-100);
 }
 
 .detail-stats {
@@ -365,7 +360,7 @@ export default {
 .members-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--p-font-size-350);
+  font-size: var(--p-font-size-325);
 
   th,
   td {
@@ -376,18 +371,18 @@ export default {
   th {
     font-weight: var(--p-font-weight-semibold);
     color: var(--p-color-text-secondary);
-    font-size: var(--p-font-size-300);
+    font-size: var(--p-font-size-275);
     background: var(--p-color-bg-surface-secondary);
     border-bottom: 1px solid var(--p-color-border);
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
   }
 
-  .th-first {
+  .th--first {
     border-top-left-radius: var(--p-border-radius-300);
   }
 
-  .th-last {
+  .th--last {
     border-top-right-radius: var(--p-border-radius-300);
   }
 
@@ -416,8 +411,10 @@ export default {
   border-radius: var(--p-border-radius-300);
 }
 
-input[type="radio"],
-input[type="checkbox"] {
-  accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
+@media (max-width: 768px) {
+  .detail-header {
+    margin: calc(-1 * var(--p-space-400)) calc(-1 * var(--p-space-400)) 0;
+    padding: var(--p-space-300) var(--p-space-400);
+  }
 }
 </style>

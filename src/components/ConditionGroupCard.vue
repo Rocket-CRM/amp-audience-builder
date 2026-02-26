@@ -490,11 +490,6 @@ export default {
   }
 }
 
-input[type="radio"],
-input[type="checkbox"] {
-  accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
-}
-
 @media (max-width: 640px) {
   .condition-fields {
     flex-direction: column;

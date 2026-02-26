@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import {
   PolarisText,
   PolarisBadge,
@@ -267,20 +267,6 @@ export default {
       navigateToDetail,
     });
 
-    // ── Watch audiences data for reactivity ──
-    watch(
-      () => [
-        props.content?.audiences,
-        props.content?.collections,
-        props.content?.audienceMembers,
-        props.content?.audienceMembersTotal,
-      ],
-      () => {
-        // Reactivity handled via computed properties
-      },
-      { deep: true }
-    );
-
     return {
       currentViewValue,
       audiencesData,
@@ -317,6 +303,11 @@ export default {
   padding: var(--p-space-600) var(--p-space-800);
   overflow-y: auto;
   box-sizing: border-box;
+
+  :deep(input[type="radio"]),
+  :deep(input[type="checkbox"]) {
+    accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
+  }
 }
 
 .editor-placeholder {
