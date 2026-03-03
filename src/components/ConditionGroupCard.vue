@@ -4,20 +4,12 @@
     <div class="group-card__header">
       <div class="group-card__header-left">
         <PolarisText variant="headingSm">Group {{ groupIndex + 1 }}</PolarisText>
-        <PolarisButtonGroup segmented>
-          <PolarisButton :pressed="localGroup.type === 'simple'" @click="updateType('simple')">
-            Simple
-          </PolarisButton>
-          <PolarisButton :pressed="localGroup.type === 'aggregate'" @click="updateType('aggregate')">
-            Aggregate
-          </PolarisButton>
-        </PolarisButtonGroup>
       </div>
       <PolarisButton variant="plain" icon="delete" iconOnly @click="$emit('remove')" />
     </div>
 
-    <!-- Collection Select -->
     <div class="group-card__body">
+      <!-- Collection Select -->
       <PolarisSelect
         label="Collection"
         :modelValue="localGroup.collection || ''"
@@ -26,127 +18,210 @@
         placeholder="Select a collection..."
       />
 
-      <!-- ========== SIMPLE MODE ========== -->
-      <template v-if="localGroup.type === 'simple'">
+      <!-- ========== AUDIENCE MEMBERSHIP MODE ========== -->
+      <template v-if="isAudienceMembership">
         <div class="conditions-list">
-          <div
-            v-for="(cond, idx) in safeConditions"
-            :key="cond.id || idx"
-            class="condition-row"
-          >
-            <div v-if="idx > 0" class="condition-connector">
-              <span class="connector-label">AND</span>
+          <div class="condition-fields">
+            <div class="condition-field condition-field--operator">
+              <PolarisSelect
+                label="Operator"
+                :modelValue="safeConditions[0]?.operator || 'is_member_of'"
+                @update:modelValue="updateAudienceOperator($event)"
+                :options="audienceOperatorOptions"
+              />
             </div>
-            <div class="condition-fields">
+            <div class="condition-field condition-field--grow">
+              <PolarisSelect
+                label="Audience"
+                :modelValue="safeConditions[0]?.value || ''"
+                @update:modelValue="updateAudienceValue($event)"
+                :options="audienceSelectOptions"
+                placeholder="Select an audience..."
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ========== STANDARD MODES ========== -->
+      <template v-else>
+        <!-- Simple / Aggregate Mode Selector (Pattern 12 radio cards) -->
+        <div v-if="collectionHasAggregate" class="entry-type-selector">
+          <span class="entry-type-selector__label">Condition type</span>
+          <div class="entry-type-options">
+            <label
+              class="entry-type-option"
+              :class="{ 'entry-type-option--active': localGroup.type === 'simple' }"
+            >
+              <input
+                type="radio"
+                value="simple"
+                :checked="localGroup.type === 'simple'"
+                @change="updateType('simple')"
+              />
+              <div class="entry-type-option__content">
+                <span class="entry-type-option__icon">📋</span>
+                <div>
+                  <span class="entry-type-option__title">Simple</span>
+                  <span class="entry-type-option__desc">Match individual field values</span>
+                </div>
+              </div>
+            </label>
+            <label
+              class="entry-type-option"
+              :class="{ 'entry-type-option--active': localGroup.type === 'aggregate' }"
+            >
+              <input
+                type="radio"
+                value="aggregate"
+                :checked="localGroup.type === 'aggregate'"
+                @change="updateType('aggregate')"
+              />
+              <div class="entry-type-option__content">
+                <span class="entry-type-option__icon">📊</span>
+                <div>
+                  <span class="entry-type-option__title">Aggregate</span>
+                  <span class="entry-type-option__desc">Calculate totals, counts, or averages</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ========== SIMPLE MODE ========== -->
+        <template v-if="localGroup.type === 'simple'">
+          <div class="conditions-list">
+            <div
+              v-for="(cond, idx) in safeConditions"
+              :key="cond.id || idx"
+              class="condition-row"
+            >
+              <div v-if="idx > 0" class="condition-connector">
+                <span class="connector-label">AND</span>
+              </div>
+              <div class="condition-fields">
+                <div class="condition-field condition-field--grow">
+                  <PolarisSelect
+                    label="Field"
+                    labelHidden
+                    :modelValue="cond.field || ''"
+                    @update:modelValue="updateConditionProp(idx, 'field', $event)"
+                    :options="fieldOptions"
+                    placeholder="Select field..."
+                    size="small"
+                  />
+                </div>
+                <div class="condition-field condition-field--operator">
+                  <PolarisSelect
+                    label="Operator"
+                    labelHidden
+                    :modelValue="cond.operator || 'equals'"
+                    @update:modelValue="updateConditionProp(idx, 'operator', $event)"
+                    :options="getSimpleOperators(cond.field)"
+                    size="small"
+                  />
+                </div>
+                <div class="condition-field condition-field--grow">
+                  <PolarisTextField
+                    label="Value"
+                    labelHidden
+                    :modelValue="cond.value || ''"
+                    @update:modelValue="updateConditionProp(idx, 'value', $event)"
+                    placeholder="Value..."
+                  />
+                </div>
+                <PolarisButton
+                  variant="plain"
+                  icon="close"
+                  iconOnly
+                  @click="removeCondition(idx)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <PolarisButton variant="plain" icon="plus" @click="addCondition">
+            Add condition
+          </PolarisButton>
+        </template>
+
+        <!-- ========== AGGREGATE MODE ========== -->
+        <template v-else-if="localGroup.type === 'aggregate'">
+          <div class="aggregate-fields">
+            <div class="aggregate-row">
+              <div class="condition-field condition-field--grow">
+                <PolarisSelect
+                  label="Function"
+                  :modelValue="localGroup.aggregate || ''"
+                  @update:modelValue="updateProp('aggregate', $event)"
+                  :options="aggregateFunctionOptions"
+                  placeholder="Select function..."
+                />
+              </div>
               <div class="condition-field condition-field--grow">
                 <PolarisSelect
                   label="Field"
-                  labelHidden
-                  :modelValue="cond.field || ''"
-                  @update:modelValue="updateConditionProp(idx, 'field', $event)"
-                  :options="fieldOptions"
+                  :modelValue="localGroup.field || ''"
+                  @update:modelValue="updateProp('field', $event)"
+                  :options="aggregateFieldOptions"
                   placeholder="Select field..."
-                  size="small"
                 />
               </div>
+            </div>
+
+            <div class="aggregate-row">
               <div class="condition-field condition-field--operator">
                 <PolarisSelect
                   label="Operator"
-                  labelHidden
-                  :modelValue="cond.operator || 'equals'"
-                  @update:modelValue="updateConditionProp(idx, 'operator', $event)"
-                  :options="getSimpleOperators(cond.field)"
-                  size="small"
+                  :modelValue="localGroup.operator || 'gte'"
+                  @update:modelValue="updateProp('operator', $event)"
+                  :options="aggregateOperatorOptions"
                 />
               </div>
               <div class="condition-field condition-field--grow">
                 <PolarisTextField
-                  label="Value"
-                  labelHidden
-                  :modelValue="cond.value || ''"
-                  @update:modelValue="updateConditionProp(idx, 'value', $event)"
-                  placeholder="Value..."
+                  label="Threshold"
+                  :modelValue="localGroup.value != null ? String(localGroup.value) : ''"
+                  @update:modelValue="updateProp('value', $event)"
+                  type="number"
+                  placeholder="e.g. 5000"
                 />
               </div>
-              <PolarisButton
-                variant="plain"
-                icon="close"
-                iconOnly
-                @click="removeCondition(idx)"
-              />
+            </div>
+
+            <div class="aggregate-row">
+              <div class="condition-field condition-field--grow">
+                <PolarisTextField
+                  label="Time range"
+                  :modelValue="localGroup.time_range?.value != null ? String(localGroup.time_range.value) : ''"
+                  @update:modelValue="updateTimeRangeValue($event)"
+                  type="number"
+                  placeholder="e.g. 30 (leave empty for all time)"
+                />
+              </div>
+              <div class="condition-field condition-field--grow">
+                <PolarisSelect
+                  label="Unit"
+                  :modelValue="localGroup.time_range?.unit || 'days'"
+                  @update:modelValue="updateTimeRangeUnit($event)"
+                  :options="timeRangeUnitOptions"
+                  :disabled="!localGroup.time_range?.value"
+                />
+              </div>
+            </div>
+
+            <div class="aggregate-row">
+              <div class="condition-field condition-field--grow">
+                <PolarisSelect
+                  label="Time field"
+                  :modelValue="localGroup.time_field || 'created_at'"
+                  @update:modelValue="updateProp('time_field', $event)"
+                  :options="timeFieldOptions"
+                />
+              </div>
             </div>
           </div>
-        </div>
-
-        <PolarisButton variant="plain" icon="plus" @click="addCondition">
-          Add condition
-        </PolarisButton>
-      </template>
-
-      <!-- ========== AGGREGATE MODE ========== -->
-      <template v-else-if="localGroup.type === 'aggregate'">
-        <div class="aggregate-fields">
-          <div class="aggregate-row">
-            <div class="condition-field condition-field--grow">
-              <PolarisSelect
-                label="Function"
-                :modelValue="localGroup.aggregate || ''"
-                @update:modelValue="updateProp('aggregate', $event)"
-                :options="aggregateFunctionOptions"
-                placeholder="Select function..."
-              />
-            </div>
-            <div class="condition-field condition-field--grow">
-              <PolarisSelect
-                label="Field"
-                :modelValue="localGroup.field || ''"
-                @update:modelValue="updateProp('field', $event)"
-                :options="aggregateFieldOptions"
-                placeholder="Select field..."
-              />
-            </div>
-          </div>
-
-          <div class="aggregate-row">
-            <div class="condition-field condition-field--operator">
-              <PolarisSelect
-                label="Operator"
-                :modelValue="localGroup.operator || 'gte'"
-                @update:modelValue="updateProp('operator', $event)"
-                :options="aggregateOperatorOptions"
-              />
-            </div>
-            <div class="condition-field condition-field--grow">
-              <PolarisTextField
-                label="Threshold"
-                :modelValue="localGroup.value || ''"
-                @update:modelValue="updateProp('value', $event)"
-                type="number"
-                placeholder="e.g. 5000"
-              />
-            </div>
-          </div>
-
-          <div class="aggregate-row">
-            <div class="condition-field condition-field--grow">
-              <PolarisSelect
-                label="Time range"
-                :modelValue="localGroup.time_range || ''"
-                @update:modelValue="updateProp('time_range', $event)"
-                :options="timeRangeOptions"
-                placeholder="All time"
-              />
-            </div>
-            <div class="condition-field condition-field--grow">
-              <PolarisSelect
-                label="Time field"
-                :modelValue="localGroup.time_field || 'created_at'"
-                @update:modelValue="updateProp('time_field', $event)"
-                :options="timeFieldOptions"
-              />
-            </div>
-          </div>
-        </div>
+        </template>
       </template>
     </div>
   </div>
@@ -157,7 +232,6 @@ import { computed } from 'vue';
 import {
   PolarisText,
   PolarisButton,
-  PolarisButtonGroup,
   PolarisSelect,
   PolarisTextField,
 } from 'polaris-weweb-styles/components';
@@ -207,14 +281,15 @@ const AGGREGATE_OPERATORS = [
   { value: 'eq', label: 'equals' },
 ];
 
-const TIME_RANGES = [
-  { value: '', label: 'All time' },
-  { value: '7 days', label: 'Last 7 days' },
-  { value: '30 days', label: 'Last 30 days' },
-  { value: '60 days', label: 'Last 60 days' },
-  { value: '90 days', label: 'Last 90 days' },
-  { value: '180 days', label: 'Last 180 days' },
-  { value: '365 days', label: 'Last 365 days' },
+const TIME_RANGE_UNITS = [
+  { value: 'days', label: 'Days' },
+  { value: 'weeks', label: 'Weeks' },
+  { value: 'months', label: 'Months' },
+];
+
+const AUDIENCE_OPERATORS = [
+  { value: 'is_member_of', label: 'Is member of' },
+  { value: 'is_not_member_of', label: 'Is not member of' },
 ];
 
 export default {
@@ -222,13 +297,13 @@ export default {
   components: {
     PolarisText,
     PolarisButton,
-    PolarisButtonGroup,
     PolarisSelect,
     PolarisTextField,
   },
   props: {
     group: { type: Object, required: true },
     collections: { type: Array, default: () => [] },
+    audiences: { type: Array, default: () => [] },
     groupIndex: { type: Number, default: 0 },
   },
   emits: ['update', 'remove'],
@@ -241,14 +316,24 @@ export default {
       return Array.isArray(conds) ? conds : [];
     });
 
+    const isAudienceMembership = computed(() => {
+      return localGroup.value?.collection === 'amp_audience_member';
+    });
+
     const selectedCollection = computed(() => {
       return safeCollections.value.find(c => c?.name === localGroup.value?.collection) || null;
+    });
+
+    const collectionHasAggregate = computed(() => {
+      return !!selectedCollection.value?.has_aggregate;
     });
 
     const collectionOptions = computed(() => {
       return safeCollections.value.map(c => ({
         value: c?.name || '',
-        label: c?.label || c?.name || 'Unknown',
+        label: c?.name === 'amp_audience_member'
+          ? 'Audience Membership'
+          : (c?.label || c?.name || 'Unknown'),
       }));
     });
 
@@ -280,9 +365,18 @@ export default {
         }));
     });
 
+    const audienceSelectOptions = computed(() => {
+      const auds = Array.isArray(props.audiences) ? props.audiences : [];
+      return auds.map(a => ({
+        value: a?.id || '',
+        label: a?.name || a?.id || 'Unknown',
+      }));
+    });
+
     const aggregateFunctionOptions = computed(() => AGGREGATE_FUNCTIONS);
     const aggregateOperatorOptions = computed(() => AGGREGATE_OPERATORS);
-    const timeRangeOptions = computed(() => TIME_RANGES);
+    const timeRangeUnitOptions = computed(() => TIME_RANGE_UNITS);
+    const audienceOperatorOptions = computed(() => AUDIENCE_OPERATORS);
 
     const getFieldType = (fieldName) => {
       const fields = selectedCollection.value?.fields || [];
@@ -320,7 +414,7 @@ export default {
           field: '',
           operator: 'gte',
           value: '',
-          time_range: '',
+          time_range: null,
           time_field: 'created_at',
           conditions: undefined,
         });
@@ -329,7 +423,16 @@ export default {
 
     const updateCollection = (collection) => {
       const base = { collection };
-      if (localGroup.value?.type === 'simple') {
+      if (collection === 'amp_audience_member') {
+        base.type = 'simple';
+        base.conditions = [{ id: `cond-${Date.now()}`, field: 'audience_id', operator: 'is_member_of', value: '' }];
+        base.aggregate = undefined;
+        base.field = undefined;
+        base.operator = undefined;
+        base.value = undefined;
+        base.time_range = undefined;
+        base.time_field = undefined;
+      } else if (localGroup.value?.type === 'simple') {
         base.conditions = [{ id: `cond-${Date.now()}`, field: '', operator: 'equals', value: '' }];
       } else {
         base.field = '';
@@ -365,16 +468,46 @@ export default {
       emitGroup({ conditions });
     };
 
+    const updateAudienceOperator = (operator) => {
+      const base = safeConditions.value[0] || { id: `cond-${Date.now()}`, field: 'audience_id' };
+      emitGroup({ conditions: [{ ...base, field: 'audience_id', operator }] });
+    };
+
+    const updateAudienceValue = (value) => {
+      const base = safeConditions.value[0] || { id: `cond-${Date.now()}`, field: 'audience_id', operator: 'is_member_of' };
+      emitGroup({ conditions: [{ ...base, field: 'audience_id', value }] });
+    };
+
+    const updateTimeRangeValue = (val) => {
+      const numVal = val ? Number(val) : null;
+      if (numVal && numVal > 0) {
+        emitGroup({ time_range: { value: numVal, unit: localGroup.value?.time_range?.unit || 'days' } });
+      } else {
+        emitGroup({ time_range: null });
+      }
+    };
+
+    const updateTimeRangeUnit = (unit) => {
+      const currentVal = localGroup.value?.time_range?.value;
+      if (currentVal) {
+        emitGroup({ time_range: { value: currentVal, unit } });
+      }
+    };
+
     return {
       localGroup,
       safeConditions,
+      isAudienceMembership,
+      collectionHasAggregate,
       collectionOptions,
       fieldOptions,
       aggregateFieldOptions,
       aggregateFunctionOptions,
       aggregateOperatorOptions,
-      timeRangeOptions,
+      timeRangeUnitOptions,
       timeFieldOptions,
+      audienceOperatorOptions,
+      audienceSelectOptions,
       getSimpleOperators,
       updateType,
       updateCollection,
@@ -382,6 +515,10 @@ export default {
       updateConditionProp,
       addCondition,
       removeCondition,
+      updateAudienceOperator,
+      updateAudienceValue,
+      updateTimeRangeValue,
+      updateTimeRangeUnit,
     };
   },
 };
@@ -415,6 +552,81 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
+}
+
+.entry-type-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-200);
+
+  &__label {
+    font-size: var(--p-font-size-300);
+    font-weight: var(--p-font-weight-semibold);
+    color: var(--p-color-text);
+  }
+}
+
+.entry-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-150);
+}
+
+.entry-type-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--p-space-200);
+  padding: var(--p-space-300);
+  border: 1px solid var(--p-color-border);
+  border-radius: var(--p-border-radius-200);
+  cursor: pointer;
+  transition: all var(--p-motion-duration-150) var(--p-motion-ease);
+  background: var(--p-color-bg-surface);
+
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--p-color-bg-fill-brand);
+  }
+
+  &:hover {
+    background: var(--p-color-bg-surface-hover);
+  }
+
+  &--active {
+    border-color: var(--p-color-border-brand);
+    background: var(--p-color-bg-surface-selected);
+  }
+
+  &__content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--p-space-200);
+    flex: 1;
+  }
+
+  &__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  &__title {
+    display: block;
+    font-size: var(--p-font-size-300);
+    font-weight: var(--p-font-weight-medium);
+    color: var(--p-color-text);
+  }
+
+  &__desc {
+    display: block;
+    font-size: var(--p-font-size-275);
+    color: var(--p-color-text-secondary);
+    margin-top: 1px;
+  }
 }
 
 .conditions-list {

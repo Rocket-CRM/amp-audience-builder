@@ -17,26 +17,55 @@
     </div>
 
     <div class="detail-content">
-      <!-- Overview Card -->
+      <!-- Activation Success Banner -->
+      <PolarisBanner
+        v-if="showActivationBanner"
+        variant="success"
+        dismissible
+        @dismiss="showActivationBanner = false"
+      >
+        Audience activated. Existing users matching these conditions will be added automatically. New users will be added in real-time as their data changes.
+      </PolarisBanner>
+
+      <!-- Overview Card (Pattern 21 — Stats / Metrics Row) -->
       <PolarisCard>
         <PolarisCardSection>
-          <PolarisText v-if="audience?.description" variant="bodyMd" color="subdued">
-            {{ audience?.description }}
-          </PolarisText>
-          <div class="detail-stats">
-            <div class="stat-item">
-              <PolarisText variant="bodySm" color="subdued">Members</PolarisText>
-              <PolarisText variant="headingMd">{{ formatNumber(audience?.member_count) }}</PolarisText>
+          <PolarisBlockStack gap="400">
+            <PolarisText v-if="audience?.description" variant="bodyMd" color="subdued">
+              {{ audience?.description }}
+            </PolarisText>
+
+            <!-- Status explanation -->
+            <PolarisText variant="bodySm" color="subdued">
+              {{ audience?.is_active
+                ? 'Users are added in real-time as they meet the conditions'
+                : 'Activate to start populating this audience' }}
+            </PolarisText>
+
+            <div class="stats-row">
+              <div class="stat-item">
+                <PolarisText variant="bodySm" color="subdued">Members</PolarisText>
+                <div class="stat-item__value-row">
+                  <PolarisText variant="headingMd">{{ formatNumber(audience?.member_count) }}</PolarisText>
+                  <PolarisButton
+                    variant="plain"
+                    icon="refresh"
+                    iconOnly
+                    size="slim"
+                    @click="requestMembers(0)"
+                  />
+                </div>
+              </div>
+              <div class="stat-item">
+                <PolarisText variant="bodySm" color="subdued">Created</PolarisText>
+                <PolarisText variant="bodyMd">{{ formatDate(audience?.created_at) }}</PolarisText>
+              </div>
+              <div class="stat-item">
+                <PolarisText variant="bodySm" color="subdued">Updated</PolarisText>
+                <PolarisText variant="bodyMd">{{ formatDate(audience?.updated_at) }}</PolarisText>
+              </div>
             </div>
-            <div class="stat-item">
-              <PolarisText variant="bodySm" color="subdued">Created</PolarisText>
-              <PolarisText variant="bodyMd">{{ formatDate(audience?.created_at) }}</PolarisText>
-            </div>
-            <div class="stat-item">
-              <PolarisText variant="bodySm" color="subdued">Updated</PolarisText>
-              <PolarisText variant="bodyMd">{{ formatDate(audience?.updated_at) }}</PolarisText>
-            </div>
-          </div>
+          </PolarisBlockStack>
         </PolarisCardSection>
       </PolarisCard>
 
@@ -48,13 +77,24 @@
               <PolarisButton
                 v-if="!showActivateConfirm"
                 :variant="audience?.is_active ? 'outline' : 'primary'"
+                :loading="isActivating"
                 @click="showActivateConfirm = true"
               >
                 {{ audience?.is_active ? 'Deactivate' : 'Activate' }}
               </PolarisButton>
 
+              <!-- Delete: disabled when active with tooltip -->
+              <span
+                v-if="audience?.is_active && !showDeleteConfirm"
+                class="delete-disabled-wrap"
+                title="Deactivate before deleting"
+              >
+                <PolarisButton variant="critical" disabled>
+                  Delete
+                </PolarisButton>
+              </span>
               <PolarisButton
-                v-if="!showDeleteConfirm"
+                v-else-if="!showDeleteConfirm"
                 variant="critical"
                 @click="showDeleteConfirm = true"
               >
@@ -62,6 +102,7 @@
               </PolarisButton>
             </PolarisInline>
 
+            <!-- Activate / Deactivate confirmation -->
             <PolarisBanner
               v-if="showActivateConfirm"
               :variant="audience?.is_active ? 'warning' : 'info'"
@@ -70,11 +111,12 @@
             >
               {{ audience?.is_active
                 ? 'Deactivating will stop evaluating new users. Existing members will remain.'
-                : 'This will activate the audience and run a backfill — evaluating all existing users against the conditions and adding qualifying members. Continue?' }}
+                : 'This will activate the audience and evaluate all existing users against the conditions. Continue?' }}
               <template #actions>
                 <PolarisButton
                   :variant="audience?.is_active ? 'critical' : 'primary'"
                   size="slim"
+                  :loading="isActivating"
                   @click="handleToggleConfirm"
                 >
                   {{ audience?.is_active ? 'Yes, deactivate' : 'Yes, activate' }}
@@ -82,6 +124,7 @@
               </template>
             </PolarisBanner>
 
+            <!-- Delete confirmation (Pattern 17B) -->
             <PolarisBanner
               v-if="showDeleteConfirm && audience?.is_active"
               variant="critical"
@@ -107,14 +150,14 @@
         </PolarisCardSection>
       </PolarisCard>
 
-      <!-- Members Card -->
+      <!-- Members Card (Pattern 20 — Pagination / Load More) -->
       <div class="members-section">
         <div class="members-header">
           <PolarisText variant="headingMd">Members</PolarisText>
           <PolarisCheckbox
             :modelValue="includeExited"
             @update:modelValue="handleExitedToggle"
-            label="Include exited members"
+            label="Show exited members"
           />
         </div>
 
@@ -206,6 +249,8 @@ export default {
     const includeExited = ref(false);
     const showActivateConfirm = ref(false);
     const showDeleteConfirm = ref(false);
+    const isActivating = ref(false);
+    const showActivationBanner = ref(false);
     const currentOffset = ref(0);
     const PAGE_SIZE = 50;
 
@@ -254,7 +299,16 @@ export default {
 
     const handleToggleConfirm = () => {
       showActivateConfirm.value = false;
+      const wasInactive = !props.audience?.is_active;
+      if (wasInactive) {
+        isActivating.value = true;
+      }
       emit('toggle-status', props.audience);
+      if (wasInactive) {
+        setTimeout(() => { isActivating.value = false; }, 1500);
+        showActivationBanner.value = true;
+        setTimeout(() => { showActivationBanner.value = false; }, 8000);
+      }
     };
 
     const handleDeleteConfirm = () => {
@@ -268,18 +322,27 @@ export default {
         includeExited.value = false;
         showActivateConfirm.value = false;
         showDeleteConfirm.value = false;
+        showActivationBanner.value = false;
+        isActivating.value = false;
         requestMembers(0);
       }
     }, { immediate: true });
+
+    watch(() => props.audience?.is_active, () => {
+      isActivating.value = false;
+    });
 
     return {
       includeExited,
       showActivateConfirm,
       showDeleteConfirm,
+      isActivating,
+      showActivationBanner,
       safeMembers,
       hasMore,
       formatDate,
       formatNumber,
+      requestMembers,
       handleExitedToggle,
       loadMore,
       handleToggleConfirm,
@@ -325,7 +388,7 @@ export default {
   gap: var(--p-space-400);
 }
 
-.detail-stats {
+.stats-row {
   display: flex;
   gap: var(--p-space-800);
   flex-wrap: wrap;
@@ -335,6 +398,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-100);
+
+  &__value-row {
+    display: flex;
+    align-items: center;
+    gap: var(--p-space-200);
+  }
+}
+
+.delete-disabled-wrap {
+  cursor: not-allowed;
 }
 
 .members-section {

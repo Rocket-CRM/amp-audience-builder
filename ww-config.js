@@ -67,31 +67,31 @@ export default {
     {
       name: 'create-audience',
       label: { en: 'On Create Audience' },
-      event: { p_name: '', p_description: '', p_conditions: {} },
+      event: { name: '', description: '', conditions: {} },
       default: true,
     },
     {
       name: 'update-audience',
       label: { en: 'On Update Audience' },
-      event: { p_audience_id: '', p_name: '', p_description: '', p_conditions: {} },
+      event: { audience_id: '', name: '', description: '', conditions: {} },
       default: true,
     },
     {
       name: 'delete-audience',
       label: { en: 'On Delete Audience' },
-      event: { p_audience_id: '' },
+      event: { audience_id: '' },
       default: true,
     },
     {
       name: 'activate-audience',
       label: { en: 'On Activate Audience' },
-      event: { p_audience_id: '', p_run_backfill: true },
+      event: { audience_id: '', run_backfill: true },
       default: true,
     },
     {
       name: 'deactivate-audience',
       label: { en: 'On Deactivate Audience' },
-      event: { p_audience_id: '' },
+      event: { audience_id: '' },
       default: true,
     },
     {

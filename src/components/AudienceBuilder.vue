@@ -73,6 +73,7 @@
                 <ConditionGroupCard
                   :group="group"
                   :collections="safeCollections"
+                  :audiences="safeAudiences"
                   :groupIndex="idx"
                   @update="updateGroup(idx, $event)"
                   @remove="removeGroup(idx)"
@@ -141,6 +142,7 @@ export default {
   props: {
     audience: { type: Object, default: null },
     collections: { type: Array, default: () => [] },
+    audiences: { type: Array, default: () => [] },
   },
   emits: ['save', 'cancel'],
   setup(props, { emit }) {
@@ -152,6 +154,7 @@ export default {
 
     const isEditing = computed(() => !!props.audience?.id);
     const safeCollections = computed(() => Array.isArray(props.collections) ? props.collections : []);
+    const safeAudiences = computed(() => Array.isArray(props.audiences) ? props.audiences : []);
 
     const nameError = computed(() => {
       if (validationErrors.value.length && !name.value?.trim()) {
@@ -169,13 +172,35 @@ export default {
         description.value = aud.description || '';
         const groups = aud.conditions?.groups;
         if (Array.isArray(groups) && groups.length) {
-          conditionGroups.value = groups.map(g => ({
-            ...g,
-            id: g.id || makeGroupId(),
-            conditions: g.type === 'simple'
-              ? (g.conditions || []).map(c => ({ ...c, id: c.id || `cond-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }))
-              : g.conditions,
-          }));
+          conditionGroups.value = groups.map(g => {
+            const group = {
+              ...g,
+              id: g.id || makeGroupId(),
+            };
+            if (g.type === 'simple') {
+              group.conditions = (g.conditions || []).map(c => ({
+                ...c,
+                id: c.id || `cond-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              }));
+            } else if (g.type === 'aggregate') {
+              const agg = (typeof g.aggregate === 'object' && g.aggregate) ? g.aggregate : {};
+              group.aggregate = agg.function || (typeof g.aggregate === 'string' ? g.aggregate : '');
+              group.field = agg.field || g.field || '';
+              group.operator = agg.operator || g.operator || 'gte';
+              group.value = agg.value ?? g.value ?? '';
+              const tr = agg.time_range || g.time_range;
+              if (typeof tr === 'string' && tr) {
+                const parts = tr.split(' ');
+                group.time_range = { value: Number(parts[0]) || 0, unit: parts[1] || 'days' };
+              } else if (tr && typeof tr === 'object') {
+                group.time_range = tr;
+              } else {
+                group.time_range = null;
+              }
+              group.time_field = agg.time_field || g.time_field || 'created_at';
+            }
+            return group;
+          });
         } else {
           conditionGroups.value = [];
         }
@@ -251,13 +276,20 @@ export default {
             operator: c.operator,
             value: c.value,
           }));
-        } else {
-          base.aggregate = g.aggregate;
-          base.field = g.field;
-          base.operator = g.operator;
-          base.value = g.value;
-          if (g.time_range) base.time_range = g.time_range;
-          if (g.time_field && g.time_field !== 'created_at') base.time_field = g.time_field;
+        } else if (g.type === 'aggregate') {
+          base.conditions = [];
+          base.aggregate = {
+            function: g.aggregate,
+            field: g.field,
+            operator: g.operator,
+            value: g.value,
+          };
+          if (g.time_range && g.time_range?.value) {
+            base.aggregate.time_range = g.time_range;
+          }
+          if (g.time_field && g.time_field !== 'created_at') {
+            base.aggregate.time_field = g.time_field;
+          }
         }
         return base;
       });
@@ -297,6 +329,7 @@ export default {
       isSaving,
       isEditing,
       safeCollections,
+      safeAudiences,
       nameError,
       addGroup,
       removeGroup,

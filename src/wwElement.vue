@@ -17,6 +17,7 @@
       v-else-if="currentViewValue === 'builder'"
       :audience="editingAudienceObj"
       :collections="collectionsData"
+      :audiences="audiencesData"
       @save="handleSave"
       @cancel="handleBackToList"
     />
@@ -213,6 +214,9 @@ export default {
           name: 'activate-audience',
           event: { audience_id: audience.id, run_backfill: true },
         });
+        setTimeout(() => {
+          handleRefresh();
+        }, 3000);
       }
     };
 
