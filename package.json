@@ -9,6 +9,6 @@
     "@weweb/cli": "latest"
   },
   "dependencies": {
-    "polaris-weweb-styles": "^2.3.0"
+    "polaris-weweb-styles": "github:Rocket-CRM/polaris-weweb-styles"
   }
 }
