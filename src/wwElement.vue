@@ -4,6 +4,7 @@
     <AudienceList
       v-if="currentViewValue === 'list'"
       :audiences="audiencesData"
+      :loading="isLoading"
       @create="handleCreateNew"
       @view="handleViewDetail"
       @edit="handleEdit"
@@ -42,7 +43,7 @@
         <div class="editor-placeholder__icon">🎯</div>
         <PolarisText variant="headingMd">Audience Builder</PolarisText>
         <PolarisText variant="bodySm" color="subdued">
-          Bind <strong>Audiences Data</strong> and <strong>Collections Data</strong> in the settings panel to get started.
+          Bind the <strong>Auth Token (JWT)</strong> in the settings panel to get started.
         </PolarisText>
         <div class="editor-placeholder__badges">
           <PolarisBadge variant="info">📋 List</PolarisBadge>
@@ -56,7 +57,7 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import {
   PolarisText,
   PolarisBadge,
@@ -64,6 +65,9 @@ import {
 import AudienceList from './components/AudienceList.vue';
 import AudienceBuilder from './components/AudienceBuilder.vue';
 import AudienceDetail from './components/AudienceDetail.vue';
+
+const SUPABASE_URL = 'https://wkevmsedchftztoolkmi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZXZtc2VkY2hmdHp0b29sa21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1MTM2OTgsImV4cCI6MjA2NjA4OTY5OH0.bd8ELGtX8ACmk_WCxR_tIFljwyHgD3YD4PdBDpD-kSM';
 
 export default {
   components: {
@@ -83,6 +87,44 @@ export default {
   emits: ['trigger-event'],
   setup(props, { emit, expose }) {
     const editingAudience = ref(null);
+    const isLoading = ref(false);
+    const audiences = ref([]);
+    const collections = ref([]);
+    const members = ref([]);
+    const membersTotal = ref(0);
+
+    // ── Supabase Helpers ──
+    const authToken = computed(() => props.content?.authToken || '');
+
+    const headers = computed(() => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken.value}`,
+      'apikey': SUPABASE_ANON_KEY,
+    }));
+
+    const rpc = async (functionName, body = {}) => {
+      if (!authToken.value) return null;
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${functionName}`, {
+          method: 'POST',
+          headers: headers.value,
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`RPC ${functionName} failed: ${res.status} ${text}`);
+        }
+        const data = await res.json();
+        if (data && typeof data === 'object' && 'success' in data && data.success === false) {
+          throw new Error(data.title || data.description || `${functionName} failed`);
+        }
+        return data;
+      } catch (err) {
+        console.error(`[AudienceBuilder] RPC ${functionName} error:`, err);
+        emit('trigger-event', { name: 'error', event: { message: err?.message || String(err), code: functionName } });
+        throw err;
+      }
+    };
 
     // ── Internal Variables ──
     const { value: currentView, setValue: setCurrentView } = wwLib.wwVariable.useComponentVariable({
@@ -113,35 +155,102 @@ export default {
       defaultValue: false,
     });
 
+    const { value: audienceCountVar, setValue: setAudienceCount } = wwLib.wwVariable.useComponentVariable({
+      uid: props.uid,
+      name: 'audienceCount',
+      type: 'number',
+      defaultValue: 0,
+    });
+
     // ── Computed Data ──
     const currentViewValue = computed(() => currentView.value || 'list');
-
-    const audiencesData = computed(() => {
-      const data = props.content?.audiences;
-      return Array.isArray(data) ? data : [];
-    });
-
-    const collectionsData = computed(() => {
-      const data = props.content?.collections;
-      return Array.isArray(data) ? data : [];
-    });
-
-    const membersData = computed(() => {
-      const data = props.content?.audienceMembers;
-      return Array.isArray(data) ? data : [];
-    });
-
-    const membersTotalData = computed(() => {
-      return Number(props.content?.audienceMembersTotal) || 0;
-    });
+    const audiencesData = computed(() => audiences.value);
+    const collectionsData = computed(() => collections.value);
+    const membersData = computed(() => members.value);
+    const membersTotalData = computed(() => membersTotal.value);
 
     const selectedAudienceObj = computed(() => {
       const id = selectedAudienceId.value;
       if (!id) return null;
-      return audiencesData.value.find(a => a?.id === id) || null;
+      return audiences.value.find(a => a?.id === id) || null;
     });
 
     const editingAudienceObj = computed(() => editingAudience.value);
+
+    // ── Data Fetching ──
+    const fetchAudiences = async () => {
+      if (!authToken.value) return;
+      isLoading.value = true;
+      try {
+        const result = await rpc('bff_list_audiences');
+        const data = result?.success ? (result?.data || []) : (Array.isArray(result) ? result : []);
+        audiences.value = data;
+        setAudienceCount(data.length);
+        emit('trigger-event', { name: 'data-loaded', event: { audienceCount: data.length } });
+      } catch (err) {
+        audiences.value = [];
+      } finally {
+        isLoading.value = false;
+      }
+    };
+
+    const fetchCollections = async () => {
+      if (!authToken.value) return;
+      try {
+        const data = await rpc('bff_get_workflow_collections');
+        if (Array.isArray(data)) {
+          collections.value = data;
+        } else if (data?.collections) {
+          collections.value = data.collections;
+        }
+      } catch (err) {
+        collections.value = [];
+      }
+    };
+
+    const fetchMembers = async (audienceId, limit = 50, offset = 0, includeExited = false) => {
+      if (!authToken.value || !audienceId) return;
+      try {
+        const result = await rpc('bff_get_audience_members', {
+          p_audience_id: audienceId,
+          p_limit: limit,
+          p_offset: offset,
+          p_include_exited: includeExited,
+        });
+        if (result?.success) {
+          members.value = result?.data || [];
+          membersTotal.value = result?.total || result?.data?.length || 0;
+        } else {
+          members.value = Array.isArray(result?.data) ? result.data : [];
+          membersTotal.value = result?.total || 0;
+        }
+      } catch (err) {
+        members.value = [];
+        membersTotal.value = 0;
+      }
+    };
+
+    // ── Init ──
+    const initData = async () => {
+      if (!authToken.value) return;
+      await Promise.all([
+        fetchAudiences(),
+        fetchCollections(),
+      ]);
+    };
+
+    onMounted(() => {
+      initData();
+    });
+
+    watch(
+      () => props.content?.authToken,
+      (newVal, oldVal) => {
+        if (newVal && newVal !== oldVal) {
+          initData();
+        }
+      },
+    );
 
     // ── Navigation ──
     const navigateTo = (view, audienceId = '') => {
@@ -159,7 +268,10 @@ export default {
       editingAudience.value = null;
       setEditingConditions(null);
       setHasUnsavedChanges(false);
+      members.value = [];
+      membersTotal.value = 0;
       navigateTo('list');
+      fetchAudiences();
     };
 
     const handleCreateNew = () => {
@@ -176,79 +288,99 @@ export default {
 
     const handleViewDetail = (audience) => {
       navigateTo('detail', audience?.id || '');
-    };
-
-    // ── API Actions (emit trigger events) ──
-    const handleSave = (payload) => {
-      if (payload.audience_id) {
-        emit('trigger-event', {
-          name: 'update-audience',
-          event: {
-            audience_id: payload.audience_id,
-            name: payload.name,
-            description: payload.description,
-            conditions: payload.conditions,
-          },
-        });
-      } else {
-        emit('trigger-event', {
-          name: 'create-audience',
-          event: {
-            name: payload.name,
-            description: payload.description,
-            conditions: payload.conditions,
-          },
-        });
+      if (audience?.id) {
+        fetchMembers(audience.id);
       }
-      setHasUnsavedChanges(false);
     };
 
-    const handleToggleStatus = (audience) => {
-      if (audience?.is_active) {
+    // ── API Actions (direct Supabase calls) ──
+    const handleSave = async (payload) => {
+      try {
+        if (payload.audience_id) {
+          await rpc('bff_update_audience', {
+            p_audience_id: payload.audience_id,
+            p_name: payload.name,
+            p_description: payload.description || null,
+            p_conditions: payload.conditions || { groups: [] },
+          });
+          emit('trigger-event', {
+            name: 'audience-saved',
+            event: { audience_id: payload.audience_id, name: payload.name, action: 'updated' },
+          });
+        } else {
+          const result = await rpc('bff_create_audience', {
+            p_name: payload.name,
+            p_description: payload.description || null,
+            p_conditions: payload.conditions || { groups: [] },
+          });
+          const newId = result?.data?.id || result?.id || '';
+          emit('trigger-event', {
+            name: 'audience-saved',
+            event: { audience_id: newId, name: payload.name, action: 'created' },
+          });
+        }
+        setHasUnsavedChanges(false);
+        handleBackToList();
+      } catch (err) {
+        // Error already emitted by rpc helper
+      }
+    };
+
+    const handleToggleStatus = async (audience) => {
+      if (!audience?.id) return;
+      try {
+        if (audience?.is_active) {
+          await rpc('bff_deactivate_audience', { p_audience_id: audience.id });
+          emit('trigger-event', {
+            name: 'audience-status-changed',
+            event: { audience_id: audience.id, is_active: false },
+          });
+        } else {
+          await rpc('bff_activate_audience', { p_audience_id: audience.id, p_run_backfill: true });
+          emit('trigger-event', {
+            name: 'audience-status-changed',
+            event: { audience_id: audience.id, is_active: true },
+          });
+        }
+        await fetchAudiences();
+      } catch (err) {
+        // Error already emitted by rpc helper
+      }
+    };
+
+    const handleDelete = async (audience) => {
+      if (!audience?.id) return;
+      try {
+        await rpc('bff_delete_audience', { p_audience_id: audience.id });
         emit('trigger-event', {
-          name: 'deactivate-audience',
+          name: 'audience-deleted',
           event: { audience_id: audience.id },
         });
-      } else {
-        emit('trigger-event', {
-          name: 'activate-audience',
-          event: { audience_id: audience.id, run_backfill: true },
-        });
-        setTimeout(() => {
-          handleRefresh();
-        }, 3000);
+        await fetchAudiences();
+      } catch (err) {
+        // Error already emitted by rpc helper
       }
     };
 
-    const handleDelete = (audience) => {
-      emit('trigger-event', {
-        name: 'delete-audience',
-        event: { audience_id: audience?.id },
-      });
-    };
-
-    const handleDeleteFromDetail = (audience) => {
-      handleDelete(audience);
+    const handleDeleteFromDetail = async (audience) => {
+      await handleDelete(audience);
       handleBackToList();
     };
 
     const handleRefresh = () => {
-      emit('trigger-event', { name: 'refresh-audiences', event: {} });
+      fetchAudiences();
     };
 
     const handleLoadMembers = (params) => {
-      emit('trigger-event', {
-        name: 'load-members',
-        event: {
-          p_audience_id: params?.audience_id || selectedAudienceId.value,
-          p_limit: params?.limit || 50,
-          p_offset: params?.offset || 0,
-          p_include_exited: params?.include_exited || false,
-        },
-      });
+      fetchMembers(
+        params?.audience_id || selectedAudienceId.value,
+        params?.limit || 50,
+        params?.offset || 0,
+        params?.include_exited || false,
+      );
     };
 
-    // ── Exposed Actions (for Component Actions in WeWeb) ──
+    // ── Exposed Actions ──
     const navigateToList = () => handleBackToList();
 
     const navigateToBuilder = (audienceData) => {
@@ -262,13 +394,17 @@ export default {
     const navigateToDetail = (audienceId) => {
       if (audienceId) {
         navigateTo('detail', audienceId);
+        fetchMembers(audienceId);
       }
     };
+
+    const refreshData = () => initData();
 
     expose({
       navigateToList,
       navigateToBuilder,
       navigateToDetail,
+      refreshData,
     });
 
     return {
@@ -279,6 +415,7 @@ export default {
       membersTotalData,
       selectedAudienceObj,
       editingAudienceObj,
+      isLoading,
       handleBackToList,
       handleCreateNew,
       handleEdit,

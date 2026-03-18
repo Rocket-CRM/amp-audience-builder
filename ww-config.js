@@ -5,10 +5,7 @@ export default {
     },
     icon: 'target',
     customSettingsPropertiesOrder: [
-      'audiences',
-      'collections',
-      'audienceMembers',
-      'audienceMembersTotal',
+      'authToken',
     ],
   },
   actions: [
@@ -62,120 +59,88 @@ export default {
       },
       /* wwEditor:end */
     },
+    {
+      name: 'refreshData',
+      label: { en: 'Refresh All Data' },
+      action: 'refreshData',
+      /* wwEditor:start */
+      actionDescription: {
+        en: 'Reloads audiences and collections from the database',
+      },
+      /* wwEditor:end */
+    },
   ],
   triggerEvents: [
     {
-      name: 'create-audience',
-      label: { en: 'On Create Audience' },
-      event: { name: '', description: '', conditions: {} },
+      name: 'audience-saved',
+      label: { en: 'On Audience Saved' },
+      event: { audience_id: '', name: '', action: 'created' },
       default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ audience_id: "uuid-123", name: "Test Audience", action: "created" })',
+      /* wwEditor:end */
     },
     {
-      name: 'update-audience',
-      label: { en: 'On Update Audience' },
-      event: { audience_id: '', name: '', description: '', conditions: {} },
-      default: true,
-    },
-    {
-      name: 'delete-audience',
-      label: { en: 'On Delete Audience' },
+      name: 'audience-deleted',
+      label: { en: 'On Audience Deleted' },
       event: { audience_id: '' },
       default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ audience_id: "uuid-123" })',
+      /* wwEditor:end */
     },
     {
-      name: 'activate-audience',
-      label: { en: 'On Activate Audience' },
-      event: { audience_id: '', run_backfill: true },
+      name: 'audience-status-changed',
+      label: { en: 'On Audience Status Changed' },
+      event: { audience_id: '', is_active: false },
       default: true,
-    },
-    {
-      name: 'deactivate-audience',
-      label: { en: 'On Deactivate Audience' },
-      event: { audience_id: '' },
-      default: true,
-    },
-    {
-      name: 'load-members',
-      label: { en: 'On Load Members' },
-      event: { p_audience_id: '', p_limit: 50, p_offset: 0, p_include_exited: false },
-      default: true,
-    },
-    {
-      name: 'refresh-audiences',
-      label: { en: 'On Refresh Audiences' },
-      event: {},
-      default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ audience_id: "uuid-123", is_active: true })',
+      /* wwEditor:end */
     },
     {
       name: 'view-changed',
       label: { en: 'On View Changed' },
       event: { view: '', audienceId: '' },
       default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ view: "builder", audienceId: "uuid-123" })',
+      /* wwEditor:end */
+    },
+    {
+      name: 'data-loaded',
+      label: { en: 'On Data Loaded' },
+      event: { audienceCount: 0 },
+      default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ audienceCount: 5 })',
+      /* wwEditor:end */
+    },
+    {
+      name: 'error',
+      label: { en: 'On Error' },
+      event: { message: '', code: '' },
+      default: true,
+      /* wwEditor:start */
+      getTestEvent: '() => ({ message: "Failed to save", code: "SAVE_ERROR" })',
+      /* wwEditor:end */
     },
   ],
   properties: {
-    audiences: {
-      label: { en: 'Audiences Data' },
-      type: 'Info',
-      section: 'settings',
-      options: {
-        text: { en: 'Bind the audiences array from bff_list_audiences() → data' },
-      },
-      bindable: true,
-      defaultValue: [],
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'array',
-        tooltip:
-          'Array of audience objects: [{id, name, description, is_active, member_count, conditions, created_at, updated_at}]',
-      },
-      /* wwEditor:end */
-    },
-    collections: {
-      label: { en: 'Collections Data' },
-      type: 'Info',
-      section: 'settings',
-      options: {
-        text: { en: 'Bind collections from bff_get_workflow_collections()' },
-      },
-      bindable: true,
-      defaultValue: [],
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'array',
-        tooltip:
-          'Array of collections: [{name, label, fields: [{name, label, type}], has_aggregate, aggregate_fields: [{name, label, type}]}]',
-      },
-      /* wwEditor:end */
-    },
-    audienceMembers: {
-      label: { en: 'Audience Members' },
-      type: 'Info',
-      section: 'settings',
-      options: {
-        text: { en: 'Bind member data from bff_get_audience_members() → data' },
-      },
-      bindable: true,
-      defaultValue: [],
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'array',
-        tooltip:
-          'Array of member objects: [{user_id, full_name, phone_number, entered_at, exited_at}]',
-      },
-      /* wwEditor:end */
-    },
-    audienceMembersTotal: {
-      label: { en: 'Members Total Count' },
-      type: 'Number',
+    // ─── Connection ────────────────────────────────────
+    authToken: {
+      label: { en: 'Auth Token (JWT)' },
+      type: 'Text',
       section: 'settings',
       bindable: true,
-      defaultValue: 0,
+      defaultValue: '',
       /* wwEditor:start */
       bindingValidation: {
-        type: 'number',
-        tooltip: 'Total member count from bff_get_audience_members() → total',
+        type: 'string',
+        tooltip: 'Current admin user JWT. Bind to Supabase plugin access token.',
       },
+      propertyHelp:
+        "Bind to the current admin user's JWT from the Supabase auth session. This is the only binding required — all data is fetched automatically.",
       /* wwEditor:end */
     },
   },
