@@ -49,11 +49,9 @@
                   <PolarisText variant="headingMd">{{ formatNumber(audience?.member_count) }}</PolarisText>
                   <PolarisButton
                     variant="plain"
-                    icon="refresh"
-                    iconOnly
                     size="slim"
                     @click="requestMembers(0)"
-                  />
+                  >Refresh</PolarisButton>
                 </div>
               </div>
               <div class="stat-item">
@@ -367,7 +365,7 @@ export default {
   margin: calc(-1 * var(--p-space-600)) calc(-1 * var(--p-space-800)) 0;
   background: var(--p-color-bg-surface);
   border-bottom: 1px solid var(--p-color-border);
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
+  box-shadow: var(--p-shadow-header, 0 1px 0 0 rgba(0, 0, 0, 0.04));
   flex-shrink: 0;
 }
 
