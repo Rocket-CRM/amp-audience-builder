@@ -537,7 +537,7 @@ export default {
   justify-content: space-between;
   padding: var(--p-space-300) var(--p-space-400);
   border-bottom: 1px solid var(--p-color-border);
-  background: var(--p-color-bg-surface-secondary);
+  background: var(--p-color-bg-surface);
   border-radius: var(--p-border-radius-300) var(--p-border-radius-300) 0 0;
 }
 

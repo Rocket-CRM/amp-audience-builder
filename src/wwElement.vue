@@ -441,7 +441,7 @@ export default {
   font-family: var(--p-font-family-sans);
   color: var(--p-color-text);
   background: var(--p-color-bg-surface-secondary);
-  padding: var(--p-space-600) var(--p-space-800);
+  padding: 0;
   overflow-y: auto;
   box-sizing: border-box;
 
