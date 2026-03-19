@@ -53,9 +53,6 @@
           />
         </PolarisBlockStack>
 
-        <!-- Divider -->
-        <div class="builder-divider"></div>
-
         <!-- Conditions -->
         <div class="conditions-section">
           <PolarisBlockStack gap="100">
@@ -388,15 +385,13 @@ export default {
   max-width: 720px;
 }
 
-.builder-divider {
-  height: 1px;
-  background: var(--p-color-border);
-}
-
 .conditions-section {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
+  background: var(--p-color-bg-surface-secondary);
+  border-radius: var(--p-border-radius-200);
+  padding: var(--p-space-400);
 }
 
 .condition-builder-area {
