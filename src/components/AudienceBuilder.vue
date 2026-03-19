@@ -33,72 +33,73 @@
       </PolarisBanner>
 
       <div class="builder-content">
-        <!-- Name & Description Card -->
-        <PolarisCard sectioned>
-          <PolarisBlockStack gap="400">
-            <PolarisTextField
-              label="Audience name"
-              :modelValue="name"
-              @update:modelValue="name = $event"
-              required
-              placeholder="e.g. High-Value Customers"
-              :error="nameError"
-            />
-            <PolarisTextField
-              label="Description"
-              :modelValue="description"
-              @update:modelValue="description = $event"
-              multiline
-              :rows="2"
-              placeholder="Describe who belongs in this audience..."
-            />
-          </PolarisBlockStack>
-        </PolarisCard>
-
-        <!-- Conditions Card -->
-        <PolarisCard>
-          <PolarisCardHeader
-            title="Conditions"
-            description="Users must satisfy ALL groups below to qualify for this audience."
+        <!-- Name & Description -->
+        <PolarisBlockStack gap="400">
+          <PolarisTextField
+            label="Audience name"
+            :modelValue="name"
+            @update:modelValue="name = $event"
+            required
+            placeholder="e.g. High-Value Customers"
+            :error="nameError"
           />
-          <PolarisCardSection>
-            <div class="condition-builder-area">
-              <!-- Condition Groups -->
-              <div v-if="conditionGroups.length" class="condition-groups">
-                <template v-for="(group, idx) in conditionGroups" :key="group.id">
-                  <div v-if="idx > 0" class="and-connector">
-                    <div class="and-connector__line"></div>
-                    <span class="and-connector__badge">AND</span>
-                    <div class="and-connector__line"></div>
-                  </div>
-                  <ConditionGroupCard
-                    :group="group"
-                    :collections="safeCollections"
-                    :audiences="safeAudiences"
-                    :groupIndex="idx"
-                    @update="updateGroup(idx, $event)"
-                    @remove="removeGroup(idx)"
-                  />
-                </template>
-              </div>
+          <PolarisTextField
+            label="Description"
+            :modelValue="description"
+            @update:modelValue="description = $event"
+            multiline
+            :rows="2"
+            placeholder="Describe who belongs in this audience..."
+          />
+        </PolarisBlockStack>
 
-              <!-- Empty state for no groups -->
-              <PolarisEmptyState
-                v-if="!conditionGroups.length"
-                heading="No conditions defined"
-                icon="🎯"
-                compact
-              >
-                Add at least one condition group to define who belongs in this audience.
-              </PolarisEmptyState>
+        <!-- Divider -->
+        <div class="builder-divider"></div>
 
-              <!-- Add Group Button -->
-              <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
-                Add condition group
-              </PolarisButton>
+        <!-- Conditions -->
+        <div class="conditions-section">
+          <PolarisBlockStack gap="100">
+            <PolarisText variant="headingMd">Conditions</PolarisText>
+            <PolarisText variant="bodySm" color="subdued">
+              Users must satisfy ALL groups below to qualify for this audience.
+            </PolarisText>
+          </PolarisBlockStack>
+
+          <div class="condition-builder-area">
+            <!-- Condition Groups -->
+            <div v-if="conditionGroups.length" class="condition-groups">
+              <template v-for="(group, idx) in conditionGroups" :key="group.id">
+                <div v-if="idx > 0" class="and-connector">
+                  <div class="and-connector__line"></div>
+                  <span class="and-connector__badge">AND</span>
+                  <div class="and-connector__line"></div>
+                </div>
+                <ConditionGroupCard
+                  :group="group"
+                  :collections="safeCollections"
+                  :audiences="safeAudiences"
+                  :groupIndex="idx"
+                  @update="updateGroup(idx, $event)"
+                  @remove="removeGroup(idx)"
+                />
+              </template>
             </div>
-          </PolarisCardSection>
-        </PolarisCard>
+
+            <!-- Empty state -->
+            <div v-if="!conditionGroups.length" class="conditions-empty">
+              <div class="conditions-empty__icon">🎯</div>
+              <PolarisText variant="headingSm">No conditions defined</PolarisText>
+              <PolarisText variant="bodySm" color="subdued">
+                Add at least one condition group to define who belongs in this audience.
+              </PolarisText>
+            </div>
+
+            <!-- Add Group Button -->
+            <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
+              Add condition group
+            </PolarisButton>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -117,13 +118,9 @@ import { ref, computed, watch } from 'vue';
 import {
   PolarisText,
   PolarisButton,
-  PolarisCard,
-  PolarisCardHeader,
-  PolarisCardSection,
   PolarisBlockStack,
   PolarisTextField,
   PolarisBanner,
-  PolarisEmptyState,
 } from 'polaris-weweb-styles/components';
 import ConditionGroupCard from './ConditionGroupCard.vue';
 
@@ -132,13 +129,9 @@ export default {
   components: {
     PolarisText,
     PolarisButton,
-    PolarisCard,
-    PolarisCardHeader,
-    PolarisCardSection,
     PolarisBlockStack,
     PolarisTextField,
     PolarisBanner,
-    PolarisEmptyState,
     ConditionGroupCard,
   },
   props: {
@@ -344,6 +337,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import 'polaris-weweb-styles';
+
 .audience-builder-form {
   display: flex;
   flex-direction: column;
@@ -355,10 +350,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--p-space-300) var(--p-space-600);
+  padding: var(--p-space-400) var(--p-space-600);
   background: var(--p-color-bg-surface);
   border-bottom: 1px solid var(--p-color-border);
-  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
 }
 
@@ -381,13 +375,25 @@ export default {
   flex: 1;
   overflow-y: auto;
   padding: var(--p-space-600);
-  background: var(--p-color-bg-surface-secondary);
+  background: var(--p-color-bg-surface);
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
 }
 
 .builder-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-500);
+  max-width: 720px;
+}
+
+.builder-divider {
+  height: 1px;
+  background: var(--p-color-border);
+}
+
+.conditions-section {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
@@ -397,11 +403,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: var(--p-space-400);
+}
+
+.conditions-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--p-space-200);
+  padding: var(--p-space-800) var(--p-space-400);
+  text-align: center;
   background: var(--p-color-bg-surface-secondary);
-  padding: var(--p-space-400);
-  border-radius: var(--p-border-radius-200);
-  margin: calc(-1 * var(--p-space-400));
-  margin-top: 0;
+  border-radius: var(--p-border-radius-300);
+
+  &__icon {
+    font-size: 28px;
+  }
 }
 
 .condition-groups {
@@ -411,29 +427,15 @@ export default {
 }
 
 .and-connector {
-  display: flex;
-  align-items: center;
-  gap: var(--p-space-200);
-  padding: var(--p-space-200) 0;
+  @include condition-group-connector;
 }
 
 .and-connector__line {
-  flex: 1;
-  height: 1px;
-  background: var(--p-color-border);
+  @include condition-group-connector-line;
 }
 
 .and-connector__badge {
-  font-size: var(--p-font-size-300);
-  font-weight: var(--p-font-weight-semibold);
-  color: var(--p-color-text-secondary);
-  background: var(--p-color-bg-surface);
-  padding: var(--p-space-100) var(--p-space-300);
-  border-radius: var(--p-border-radius-full);
-  border: 1px solid var(--p-color-border);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  @include condition-group-connector-badge;
 }
 
 .builder-footer-mobile {
@@ -460,6 +462,10 @@ export default {
 
   .builder-scroll-area {
     padding: var(--p-space-400);
+  }
+
+  .builder-content {
+    max-width: none;
   }
 }
 
