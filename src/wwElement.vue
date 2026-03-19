@@ -1,17 +1,28 @@
 <template>
   <div class="audience-root">
     <!-- List View -->
-    <AudienceList
-      v-if="currentViewValue === 'list'"
-      :audiences="audiencesData"
-      :loading="isLoading"
-      @create="handleCreateNew"
-      @view="handleViewDetail"
-      @edit="handleEdit"
-      @toggle-status="handleToggleStatus"
-      @delete="handleDelete"
-      @refresh="handleRefresh"
-    />
+    <div v-if="currentViewValue === 'list'" class="list-view-wrapper">
+      <PolarisBanner
+        v-if="loadError"
+        variant="critical"
+        title="Failed to load data"
+        dismissible
+        @dismiss="loadError = ''"
+        style="margin: var(--p-space-400) var(--p-space-500);"
+      >
+        {{ loadError }}
+      </PolarisBanner>
+      <AudienceList
+        :audiences="audiencesData"
+        :loading="isLoading"
+        @create="handleCreateNew"
+        @view="handleViewDetail"
+        @edit="handleEdit"
+        @toggle-status="handleToggleStatus"
+        @delete="handleDelete"
+        @refresh="handleRefresh"
+      />
+    </div>
 
     <!-- Builder View (Create / Edit) -->
     <AudienceBuilder
@@ -61,6 +72,7 @@ import { computed, ref, watch, onMounted } from 'vue';
 import {
   PolarisText,
   PolarisBadge,
+  PolarisBanner,
 } from 'polaris-weweb-styles/components';
 import AudienceList from './components/AudienceList.vue';
 import AudienceBuilder from './components/AudienceBuilder.vue';
@@ -73,6 +85,7 @@ export default {
   components: {
     PolarisText,
     PolarisBadge,
+    PolarisBanner,
     AudienceList,
     AudienceBuilder,
     AudienceDetail,
@@ -88,6 +101,7 @@ export default {
   setup(props, { emit, expose }) {
     const editingAudience = ref(null);
     const isLoading = ref(false);
+    const loadError = ref('');
     const audiences = ref([]);
     const collections = ref([]);
     const members = ref([]);
@@ -189,6 +203,7 @@ export default {
         emit('trigger-event', { name: 'data-loaded', event: { audienceCount: data.length } });
       } catch (err) {
         audiences.value = [];
+        loadError.value = err?.message || 'Failed to load audiences';
       } finally {
         isLoading.value = false;
       }
@@ -416,6 +431,7 @@ export default {
       selectedAudienceObj,
       editingAudienceObj,
       isLoading,
+      loadError,
       handleBackToList,
       handleCreateNew,
       handleEdit,
@@ -451,6 +467,13 @@ export default {
   :deep(input[type="checkbox"]) {
     accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
   }
+}
+
+.list-view-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 .editor-placeholder {

@@ -12,14 +12,20 @@
         <PolarisButton variant="plain" iconOnly @click="$emit('refresh')">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
         </PolarisButton>
-        <PolarisButton variant="primary" @click="$emit('create')">
+        <PolarisButton variant="primary" icon="plus" @click="$emit('create')">
           Create audience
         </PolarisButton>
       </div>
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="list-loading">
+      <span class="spinner"></span>
+      <PolarisText variant="bodyMd" color="subdued">Loading audiences...</PolarisText>
+    </div>
+
     <!-- Table -->
-    <div v-if="safeAudiences.length" class="list-table-wrap">
+    <div v-else-if="safeAudiences.length" class="list-table-wrap">
       <table class="list-table">
         <thead>
           <tr>
@@ -138,6 +144,7 @@ export default {
   },
   props: {
     audiences: { type: Array, default: () => [] },
+    loading: { type: Boolean, default: false },
   },
   emits: ['create', 'view', 'edit', 'toggle-status', 'delete', 'refresh'],
   setup(props, { emit }) {
@@ -187,6 +194,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import 'polaris-weweb-styles';
+
 .audience-list {
   display: flex;
   flex-direction: column;
@@ -217,6 +226,21 @@ export default {
   gap: var(--p-space-200);
   margin-left: auto;
   flex-shrink: 0;
+}
+
+.list-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--p-space-300);
+  padding: var(--p-space-800) 0;
+  background: var(--p-color-bg-surface);
+  border: 1px solid var(--p-color-border);
+  border-radius: var(--p-border-radius-300);
+}
+
+.spinner {
+  @include polaris-spinner;
 }
 
 .list-table-wrap {
