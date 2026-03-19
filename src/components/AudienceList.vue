@@ -10,7 +10,7 @@
       </div>
       <div class="list-header__actions">
         <PolarisButton variant="plain" iconOnly @click="$emit('refresh')">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M15.312 8.062a.75.75 0 0 1 1.06-.022l.708.688a.75.75 0 0 1-.022 1.06l-2.75 2.672a.75.75 0 0 1-1.06.022l-2.672-2.75a.75.75 0 0 1 1.076-1.044l1.328 1.367A4.501 4.501 0 0 0 5.51 6.98a.75.75 0 0 1-1.414-.5 6.001 6.001 0 0 1 10.152.734l1.064-1.152zM4.688 11.938a.75.75 0 0 1-1.06.022l-.708-.688a.75.75 0 0 1 .022-1.06l2.75-2.672a.75.75 0 0 1 1.06-.022l2.672 2.75a.75.75 0 0 1-1.076 1.044l-1.328-1.367a4.501 4.501 0 0 0 7.47 3.075.75.75 0 0 1 1.414.5 6.001 6.001 0 0 1-10.152-.734l-1.064 1.152z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
         </PolarisButton>
         <PolarisButton variant="primary" @click="$emit('create')">
           Create audience

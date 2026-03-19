@@ -45,7 +45,7 @@
 
       <!-- ========== STANDARD MODES ========== -->
       <template v-else>
-        <!-- Simple / Aggregate Mode Selector (Pattern 12 radio cards) -->
+        <!-- Simple / Aggregate Mode Selector -->
         <div v-if="collectionHasAggregate" class="entry-type-selector">
           <span class="entry-type-selector__label">Condition type</span>
           <div class="entry-type-options">
