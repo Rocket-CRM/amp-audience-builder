@@ -529,16 +529,16 @@ export default {
   background: var(--p-color-bg-surface);
   border: 1px solid var(--p-color-border);
   border-radius: var(--p-border-radius-300);
+  overflow: hidden;
 }
 
 .group-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--p-space-300) var(--p-space-400);
+  padding: var(--p-space-200) var(--p-space-300);
   border-bottom: 1px solid var(--p-color-border);
   background: var(--p-color-bg-surface);
-  border-radius: var(--p-border-radius-300) var(--p-border-radius-300) 0 0;
 }
 
 .group-card__header-left {
@@ -632,7 +632,7 @@ export default {
 .conditions-list {
   display: flex;
   flex-direction: column;
-  gap: var(--p-space-100);
+  gap: var(--p-space-200);
 }
 
 .condition-row {
@@ -652,9 +652,6 @@ export default {
   font-size: var(--p-font-size-300);
   font-weight: var(--p-font-weight-semibold);
   color: var(--p-color-text-secondary);
-  background: var(--p-color-bg-surface-secondary);
-  padding: 2px var(--p-space-200);
-  border-radius: var(--p-border-radius-100);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -663,6 +660,7 @@ export default {
   display: flex;
   gap: var(--p-space-200);
   align-items: flex-end;
+  width: 100%;
 
   :deep(select),
   :deep(input:not([type="checkbox"]):not([type="radio"])) {
@@ -679,7 +677,7 @@ export default {
   }
 
   &--operator {
-    width: 180px;
+    width: 160px;
     flex-shrink: 0;
   }
 }
@@ -694,6 +692,7 @@ export default {
   display: flex;
   gap: var(--p-space-300);
   align-items: flex-end;
+  width: 100%;
 
   :deep(select),
   :deep(input:not([type="checkbox"]):not([type="radio"])) {
