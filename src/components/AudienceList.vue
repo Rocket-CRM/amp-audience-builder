@@ -9,8 +9,8 @@
         </PolarisText>
       </div>
       <div class="list-header__actions">
-        <PolarisButton variant="plain" @click="$emit('refresh')">
-          Refresh
+        <PolarisButton variant="plain" iconOnly @click="$emit('refresh')">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path d="M15.312 8.062a.75.75 0 0 1 1.06-.022l.708.688a.75.75 0 0 1-.022 1.06l-2.75 2.672a.75.75 0 0 1-1.06.022l-2.672-2.75a.75.75 0 0 1 1.076-1.044l1.328 1.367A4.501 4.501 0 0 0 5.51 6.98a.75.75 0 0 1-1.414-.5 6.001 6.001 0 0 1 10.152.734l1.064-1.152zM4.688 11.938a.75.75 0 0 1-1.06.022l-.708-.688a.75.75 0 0 1 .022-1.06l2.75-2.672a.75.75 0 0 1 1.06-.022l2.672 2.75a.75.75 0 0 1-1.076 1.044l-1.328-1.367a4.501 4.501 0 0 0 7.47 3.075.75.75 0 0 1 1.414.5 6.001 6.001 0 0 1-10.152-.734l-1.064 1.152z"/></svg>
         </PolarisButton>
         <PolarisButton variant="primary" @click="$emit('create')">
           Create audience
@@ -193,7 +193,7 @@ export default {
   gap: var(--p-space-400);
   height: 100%;
   background: transparent;
-  padding: 0 var(--p-space-500);
+  padding: var(--p-space-600) var(--p-space-500);
 }
 
 .list-header {
@@ -213,7 +213,10 @@ export default {
 
 .list-header__actions {
   display: flex;
+  align-items: center;
   gap: var(--p-space-200);
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .list-table-wrap {
@@ -318,12 +321,16 @@ export default {
 
 @media (max-width: 768px) {
   .audience-list {
-    padding: 0;
+    padding: var(--p-space-400);
   }
 
   .list-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .list-header__actions {
+    margin-left: 0;
   }
 }
 </style>

@@ -436,13 +436,15 @@ export default {
 
 .audience-root {
   @include polaris-tokens;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   font-family: var(--p-font-family-sans);
   color: var(--p-color-text);
   background: var(--p-color-bg-surface-secondary);
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden;
   box-sizing: border-box;
 
   :deep(input[type="radio"]),
@@ -481,7 +483,7 @@ export default {
 
 @media (max-width: 768px) {
   .audience-root {
-    padding: var(--p-space-400);
+    padding: 0;
   }
 }
 </style>

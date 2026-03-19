@@ -525,20 +525,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import 'polaris-weweb-styles';
+
 .group-card {
-  background: var(--p-color-bg-surface);
-  border: 1px solid var(--p-color-border);
-  border-radius: var(--p-border-radius-300);
-  overflow: hidden;
+  @include condition-group-card;
 }
 
 .group-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--p-space-200) var(--p-space-300);
-  border-bottom: 1px solid var(--p-color-border);
-  background: var(--p-color-bg-surface);
+  @include condition-group-header;
 }
 
 .group-card__header-left {
@@ -548,10 +542,7 @@ export default {
 }
 
 .group-card__body {
-  padding: var(--p-space-400);
-  display: flex;
-  flex-direction: column;
-  gap: var(--p-space-400);
+  @include condition-group-body;
 }
 
 .entry-type-selector {
@@ -642,43 +633,26 @@ export default {
 }
 
 .condition-connector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--p-space-100) 0;
+  @include condition-row-connector;
 }
 
 .connector-label {
-  font-size: var(--p-font-size-300);
-  font-weight: var(--p-font-weight-semibold);
-  color: var(--p-color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  @include condition-connector-label;
 }
 
 .condition-fields {
-  display: flex;
-  gap: var(--p-space-200);
-  align-items: flex-end;
-  width: 100%;
-
-  :deep(select),
-  :deep(input:not([type="checkbox"]):not([type="radio"])) {
-    height: 36px;
-    box-sizing: border-box;
-  }
+  @include condition-fields-row;
 }
 
 .condition-field {
   min-width: 0;
 
   &--grow {
-    flex: 1;
+    @include condition-field-grow;
   }
 
   &--operator {
-    width: 160px;
-    flex-shrink: 0;
+    @include condition-field-operator;
   }
 }
 

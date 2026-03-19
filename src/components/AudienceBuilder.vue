@@ -18,86 +18,88 @@
       </div>
     </div>
 
-    <!-- Validation Errors -->
-    <PolarisBanner
-      v-if="validationErrors.length"
-      variant="critical"
-      title="Please fix the following errors"
-      dismissible
-      @dismiss="validationErrors = []"
-    >
-      <ul class="error-list">
-        <li v-for="(err, idx) in validationErrors" :key="idx">{{ err }}</li>
-      </ul>
-    </PolarisBanner>
+    <div class="builder-scroll-area">
+      <!-- Validation Errors -->
+      <PolarisBanner
+        v-if="validationErrors.length"
+        variant="critical"
+        title="Please fix the following errors"
+        dismissible
+        @dismiss="validationErrors = []"
+      >
+        <ul class="error-list">
+          <li v-for="(err, idx) in validationErrors" :key="idx">{{ err }}</li>
+        </ul>
+      </PolarisBanner>
 
-    <div class="builder-content">
-      <!-- Name & Description Card -->
-      <PolarisCard sectioned>
-        <PolarisBlockStack gap="400">
-          <PolarisTextField
-            label="Audience name"
-            :modelValue="name"
-            @update:modelValue="name = $event"
-            required
-            placeholder="e.g. High-Value Customers"
-            :error="nameError"
-          />
-          <PolarisTextField
-            label="Description"
-            :modelValue="description"
-            @update:modelValue="description = $event"
-            multiline
-            :rows="2"
-            placeholder="Describe who belongs in this audience..."
-          />
-        </PolarisBlockStack>
-      </PolarisCard>
+      <div class="builder-content">
+        <!-- Name & Description Card -->
+        <PolarisCard sectioned>
+          <PolarisBlockStack gap="400">
+            <PolarisTextField
+              label="Audience name"
+              :modelValue="name"
+              @update:modelValue="name = $event"
+              required
+              placeholder="e.g. High-Value Customers"
+              :error="nameError"
+            />
+            <PolarisTextField
+              label="Description"
+              :modelValue="description"
+              @update:modelValue="description = $event"
+              multiline
+              :rows="2"
+              placeholder="Describe who belongs in this audience..."
+            />
+          </PolarisBlockStack>
+        </PolarisCard>
 
-      <!-- Conditions Card -->
-      <PolarisCard>
-        <PolarisCardHeader
-          title="Conditions"
-          description="Users must satisfy ALL groups below to qualify for this audience."
-        />
-        <PolarisCardSection>
-          <div class="condition-builder-area">
-            <!-- Condition Groups -->
-            <div v-if="conditionGroups.length" class="condition-groups">
-              <template v-for="(group, idx) in conditionGroups" :key="group.id">
-                <div v-if="idx > 0" class="and-connector">
-                  <div class="and-connector__line"></div>
-                  <span class="and-connector__badge">AND</span>
-                  <div class="and-connector__line"></div>
-                </div>
-                <ConditionGroupCard
-                  :group="group"
-                  :collections="safeCollections"
-                  :audiences="safeAudiences"
-                  :groupIndex="idx"
-                  @update="updateGroup(idx, $event)"
-                  @remove="removeGroup(idx)"
-                />
-              </template>
+        <!-- Conditions Card -->
+        <PolarisCard>
+          <PolarisCardHeader
+            title="Conditions"
+            description="Users must satisfy ALL groups below to qualify for this audience."
+          />
+          <PolarisCardSection>
+            <div class="condition-builder-area">
+              <!-- Condition Groups -->
+              <div v-if="conditionGroups.length" class="condition-groups">
+                <template v-for="(group, idx) in conditionGroups" :key="group.id">
+                  <div v-if="idx > 0" class="and-connector">
+                    <div class="and-connector__line"></div>
+                    <span class="and-connector__badge">AND</span>
+                    <div class="and-connector__line"></div>
+                  </div>
+                  <ConditionGroupCard
+                    :group="group"
+                    :collections="safeCollections"
+                    :audiences="safeAudiences"
+                    :groupIndex="idx"
+                    @update="updateGroup(idx, $event)"
+                    @remove="removeGroup(idx)"
+                  />
+                </template>
+              </div>
+
+              <!-- Empty state for no groups -->
+              <PolarisEmptyState
+                v-if="!conditionGroups.length"
+                heading="No conditions defined"
+                icon="🎯"
+                compact
+              >
+                Add at least one condition group to define who belongs in this audience.
+              </PolarisEmptyState>
+
+              <!-- Add Group Button -->
+              <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
+                Add condition group
+              </PolarisButton>
             </div>
-
-            <!-- Empty state for no groups -->
-            <PolarisEmptyState
-              v-if="!conditionGroups.length"
-              heading="No conditions defined"
-              icon="🎯"
-              compact
-            >
-              Add at least one condition group to define who belongs in this audience.
-            </PolarisEmptyState>
-
-            <!-- Add Group Button -->
-            <PolarisButton variant="outline" icon="plus" fullWidth @click="addGroup">
-              Add condition group
-            </PolarisButton>
-          </div>
-        </PolarisCardSection>
-      </PolarisCard>
+          </PolarisCardSection>
+        </PolarisCard>
+      </div>
     </div>
 
     <!-- Sticky footer for mobile -->
@@ -345,7 +347,8 @@ export default {
 .audience-builder-form {
   display: flex;
   flex-direction: column;
-  gap: var(--p-space-500);
+  height: 100%;
+  min-height: 0;
 }
 
 .builder-header {
@@ -353,7 +356,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: var(--p-space-300) var(--p-space-600);
-  margin: calc(-1 * var(--p-space-600)) calc(-1 * var(--p-space-800)) 0;
   background: var(--p-color-bg-surface);
   border-bottom: 1px solid var(--p-color-border);
   box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.04);
@@ -364,11 +366,25 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--p-space-300);
+  min-width: 0;
 }
 
 .builder-header__right {
   display: flex;
+  align-items: center;
   gap: var(--p-space-200);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.builder-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--p-space-600);
+  background: var(--p-color-bg-surface-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-400);
 }
 
 .builder-content {
@@ -433,13 +449,17 @@ export default {
     display: flex;
     justify-content: flex-end;
     gap: var(--p-space-200);
-    padding-top: var(--p-space-400);
+    padding: var(--p-space-300) var(--p-space-400);
     border-top: 1px solid var(--p-color-border);
+    flex-shrink: 0;
   }
 
   .builder-header {
-    margin: calc(-1 * var(--p-space-400)) calc(-1 * var(--p-space-400)) 0;
     padding: var(--p-space-300) var(--p-space-400);
+  }
+
+  .builder-scroll-area {
+    padding: var(--p-space-400);
   }
 }
 
@@ -455,5 +475,4 @@ export default {
     margin-bottom: 0;
   }
 }
-
 </style>
