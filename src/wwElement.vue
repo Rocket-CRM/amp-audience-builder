@@ -1,17 +1,28 @@
 <template>
   <div class="audience-root">
     <!-- List View -->
-    <AudienceList
-      v-if="currentViewValue === 'list'"
-      :audiences="audiencesData"
-      :loading="isLoading"
-      @create="handleCreateNew"
-      @view="handleViewDetail"
-      @edit="handleEdit"
-      @toggle-status="handleToggleStatus"
-      @delete="handleDelete"
-      @refresh="handleRefresh"
-    />
+    <div v-if="currentViewValue === 'list'" class="list-view-wrapper">
+      <PolarisBanner
+        v-if="loadError"
+        variant="critical"
+        title="Failed to load data"
+        dismissible
+        @dismiss="loadError = ''"
+        style="margin: var(--p-space-400) var(--p-space-500);"
+      >
+        {{ loadError }}
+      </PolarisBanner>
+      <AudienceList
+        :audiences="audiencesData"
+        :loading="isLoading"
+        @create="handleCreateNew"
+        @view="handleViewDetail"
+        @edit="handleEdit"
+        @toggle-status="handleToggleStatus"
+        @delete="handleDelete"
+        @refresh="handleRefresh"
+      />
+    </div>
 
     <!-- Builder View (Create / Edit) -->
     <AudienceBuilder
@@ -61,6 +72,7 @@ import { computed, ref, watch, onMounted } from 'vue';
 import {
   PolarisText,
   PolarisBadge,
+  PolarisBanner,
 } from 'polaris-weweb-styles/components';
 import AudienceList from './components/AudienceList.vue';
 import AudienceBuilder from './components/AudienceBuilder.vue';
@@ -73,6 +85,7 @@ export default {
   components: {
     PolarisText,
     PolarisBadge,
+    PolarisBanner,
     AudienceList,
     AudienceBuilder,
     AudienceDetail,
@@ -88,12 +101,12 @@ export default {
   setup(props, { emit, expose }) {
     const editingAudience = ref(null);
     const isLoading = ref(false);
+    const loadError = ref('');
     const audiences = ref([]);
     const collections = ref([]);
     const members = ref([]);
     const membersTotal = ref(0);
 
-    // ── Supabase Helpers ──
     const authToken = computed(() => props.content?.authToken || '');
 
     const headers = computed(() => ({
@@ -126,58 +139,34 @@ export default {
       }
     };
 
-    // ── Internal Variables ──
     const { value: currentView, setValue: setCurrentView } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'currentView',
-      type: 'string',
-      defaultValue: 'list',
+      uid: props.uid, name: 'currentView', type: 'string', defaultValue: 'list',
     });
-
     const { value: selectedAudienceId, setValue: setSelectedAudienceId } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'selectedAudienceId',
-      type: 'string',
-      defaultValue: '',
+      uid: props.uid, name: 'selectedAudienceId', type: 'string', defaultValue: '',
     });
-
     const { value: editingConditions, setValue: setEditingConditions } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'editingConditions',
-      type: 'object',
-      defaultValue: null,
+      uid: props.uid, name: 'editingConditions', type: 'object', defaultValue: null,
     });
-
     const { value: hasUnsavedChanges, setValue: setHasUnsavedChanges } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'hasUnsavedChanges',
-      type: 'boolean',
-      defaultValue: false,
+      uid: props.uid, name: 'hasUnsavedChanges', type: 'boolean', defaultValue: false,
     });
-
     const { value: audienceCountVar, setValue: setAudienceCount } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'audienceCount',
-      type: 'number',
-      defaultValue: 0,
+      uid: props.uid, name: 'audienceCount', type: 'number', defaultValue: 0,
     });
 
-    // ── Computed Data ──
     const currentViewValue = computed(() => currentView.value || 'list');
     const audiencesData = computed(() => audiences.value);
     const collectionsData = computed(() => collections.value);
     const membersData = computed(() => members.value);
     const membersTotalData = computed(() => membersTotal.value);
-
     const selectedAudienceObj = computed(() => {
       const id = selectedAudienceId.value;
       if (!id) return null;
       return audiences.value.find(a => a?.id === id) || null;
     });
-
     const editingAudienceObj = computed(() => editingAudience.value);
 
-    // ── Data Fetching ──
     const fetchAudiences = async () => {
       if (!authToken.value) return;
       isLoading.value = true;
@@ -189,6 +178,7 @@ export default {
         emit('trigger-event', { name: 'data-loaded', event: { audienceCount: data.length } });
       } catch (err) {
         audiences.value = [];
+        loadError.value = err?.message || 'Failed to load audiences';
       } finally {
         isLoading.value = false;
       }
@@ -198,11 +188,8 @@ export default {
       if (!authToken.value) return;
       try {
         const data = await rpc('bff_get_workflow_collections');
-        if (Array.isArray(data)) {
-          collections.value = data;
-        } else if (data?.collections) {
-          collections.value = data.collections;
-        }
+        if (Array.isArray(data)) collections.value = data;
+        else if (data?.collections) collections.value = data.collections;
       } catch (err) {
         collections.value = [];
       }
@@ -212,10 +199,7 @@ export default {
       if (!authToken.value || !audienceId) return;
       try {
         const result = await rpc('bff_get_audience_members', {
-          p_audience_id: audienceId,
-          p_limit: limit,
-          p_offset: offset,
-          p_include_exited: includeExited,
+          p_audience_id: audienceId, p_limit: limit, p_offset: offset, p_include_exited: includeExited,
         });
         if (result?.success) {
           members.value = result?.data || [];
@@ -230,38 +214,20 @@ export default {
       }
     };
 
-    // ── Init ──
     const initData = async () => {
       if (!authToken.value) return;
-      await Promise.all([
-        fetchAudiences(),
-        fetchCollections(),
-      ]);
+      await Promise.all([fetchAudiences(), fetchCollections()]);
     };
 
-    onMounted(() => {
-      initData();
+    onMounted(() => { initData(); });
+    watch(() => props.content?.authToken, (newVal, oldVal) => {
+      if (newVal && newVal !== oldVal) initData();
     });
 
-    watch(
-      () => props.content?.authToken,
-      (newVal, oldVal) => {
-        if (newVal && newVal !== oldVal) {
-          initData();
-        }
-      },
-    );
-
-    // ── Navigation ──
     const navigateTo = (view, audienceId = '') => {
       setCurrentView(view);
-      if (audienceId) {
-        setSelectedAudienceId(audienceId);
-      }
-      emit('trigger-event', {
-        name: 'view-changed',
-        event: { view, audienceId },
-      });
+      if (audienceId) setSelectedAudienceId(audienceId);
+      emit('trigger-event', { name: 'view-changed', event: { view, audienceId } });
     };
 
     const handleBackToList = () => {
@@ -288,42 +254,27 @@ export default {
 
     const handleViewDetail = (audience) => {
       navigateTo('detail', audience?.id || '');
-      if (audience?.id) {
-        fetchMembers(audience.id);
-      }
+      if (audience?.id) fetchMembers(audience.id);
     };
 
-    // ── API Actions (direct Supabase calls) ──
     const handleSave = async (payload) => {
       try {
         if (payload.audience_id) {
           await rpc('bff_update_audience', {
-            p_audience_id: payload.audience_id,
-            p_name: payload.name,
-            p_description: payload.description || null,
-            p_conditions: payload.conditions || { groups: [] },
+            p_audience_id: payload.audience_id, p_name: payload.name,
+            p_description: payload.description || null, p_conditions: payload.conditions || { groups: [] },
           });
-          emit('trigger-event', {
-            name: 'audience-saved',
-            event: { audience_id: payload.audience_id, name: payload.name, action: 'updated' },
-          });
+          emit('trigger-event', { name: 'audience-saved', event: { audience_id: payload.audience_id, name: payload.name, action: 'updated' } });
         } else {
           const result = await rpc('bff_create_audience', {
-            p_name: payload.name,
-            p_description: payload.description || null,
-            p_conditions: payload.conditions || { groups: [] },
+            p_name: payload.name, p_description: payload.description || null, p_conditions: payload.conditions || { groups: [] },
           });
           const newId = result?.data?.id || result?.id || '';
-          emit('trigger-event', {
-            name: 'audience-saved',
-            event: { audience_id: newId, name: payload.name, action: 'created' },
-          });
+          emit('trigger-event', { name: 'audience-saved', event: { audience_id: newId, name: payload.name, action: 'created' } });
         }
         setHasUnsavedChanges(false);
         handleBackToList();
-      } catch (err) {
-        // Error already emitted by rpc helper
-      }
+      } catch (err) { /* Error already emitted by rpc helper */ }
     };
 
     const handleToggleStatus = async (audience) => {
@@ -331,101 +282,48 @@ export default {
       try {
         if (audience?.is_active) {
           await rpc('bff_deactivate_audience', { p_audience_id: audience.id });
-          emit('trigger-event', {
-            name: 'audience-status-changed',
-            event: { audience_id: audience.id, is_active: false },
-          });
+          emit('trigger-event', { name: 'audience-status-changed', event: { audience_id: audience.id, is_active: false } });
         } else {
           await rpc('bff_activate_audience', { p_audience_id: audience.id, p_run_backfill: true });
-          emit('trigger-event', {
-            name: 'audience-status-changed',
-            event: { audience_id: audience.id, is_active: true },
-          });
+          emit('trigger-event', { name: 'audience-status-changed', event: { audience_id: audience.id, is_active: true } });
         }
         await fetchAudiences();
-      } catch (err) {
-        // Error already emitted by rpc helper
-      }
+      } catch (err) { /* Error already emitted by rpc helper */ }
     };
 
     const handleDelete = async (audience) => {
       if (!audience?.id) return;
       try {
         await rpc('bff_delete_audience', { p_audience_id: audience.id });
-        emit('trigger-event', {
-          name: 'audience-deleted',
-          event: { audience_id: audience.id },
-        });
+        emit('trigger-event', { name: 'audience-deleted', event: { audience_id: audience.id } });
         await fetchAudiences();
-      } catch (err) {
-        // Error already emitted by rpc helper
-      }
+      } catch (err) { /* Error already emitted by rpc helper */ }
     };
 
-    const handleDeleteFromDetail = async (audience) => {
-      await handleDelete(audience);
-      handleBackToList();
-    };
-
-    const handleRefresh = () => {
-      fetchAudiences();
-    };
-
+    const handleDeleteFromDetail = async (audience) => { await handleDelete(audience); handleBackToList(); };
+    const handleRefresh = () => { fetchAudiences(); };
     const handleLoadMembers = (params) => {
-      fetchMembers(
-        params?.audience_id || selectedAudienceId.value,
-        params?.limit || 50,
-        params?.offset || 0,
-        params?.include_exited || false,
-      );
+      fetchMembers(params?.audience_id || selectedAudienceId.value, params?.limit || 50, params?.offset || 0, params?.include_exited || false);
     };
 
-    // ── Exposed Actions ──
     const navigateToList = () => handleBackToList();
-
     const navigateToBuilder = (audienceData) => {
-      if (audienceData && typeof audienceData === 'object' && audienceData.id) {
-        handleEdit(audienceData);
-      } else {
-        handleCreateNew();
-      }
+      if (audienceData && typeof audienceData === 'object' && audienceData.id) handleEdit(audienceData);
+      else handleCreateNew();
     };
-
     const navigateToDetail = (audienceId) => {
-      if (audienceId) {
-        navigateTo('detail', audienceId);
-        fetchMembers(audienceId);
-      }
+      if (audienceId) { navigateTo('detail', audienceId); fetchMembers(audienceId); }
     };
-
     const refreshData = () => initData();
 
-    expose({
-      navigateToList,
-      navigateToBuilder,
-      navigateToDetail,
-      refreshData,
-    });
+    expose({ navigateToList, navigateToBuilder, navigateToDetail, refreshData });
 
     return {
-      currentViewValue,
-      audiencesData,
-      collectionsData,
-      membersData,
-      membersTotalData,
-      selectedAudienceObj,
-      editingAudienceObj,
-      isLoading,
-      handleBackToList,
-      handleCreateNew,
-      handleEdit,
-      handleViewDetail,
-      handleSave,
-      handleToggleStatus,
-      handleDelete,
-      handleDeleteFromDetail,
-      handleRefresh,
-      handleLoadMembers,
+      currentViewValue, audiencesData, collectionsData, membersData, membersTotalData,
+      selectedAudienceObj, editingAudienceObj, isLoading, loadError,
+      handleBackToList, handleCreateNew, handleEdit, handleViewDetail,
+      handleSave, handleToggleStatus, handleDelete, handleDeleteFromDetail,
+      handleRefresh, handleLoadMembers,
     };
   },
 };
@@ -451,6 +349,13 @@ export default {
   :deep(input[type="checkbox"]) {
     accent-color: var(--p-color-bg-fill-brand, #2C6ECB);
   }
+}
+
+.list-view-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 .editor-placeholder {
