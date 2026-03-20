@@ -60,7 +60,7 @@
                 @change="updateType('simple')"
               />
               <div class="entry-type-option__content">
-                <span class="entry-type-option__icon">📋</span>
+                <span class="entry-type-option__icon"><img :src="ICON_URLS.simple" class="entry-type-icon-img" /></span>
                 <div>
                   <span class="entry-type-option__title">Simple</span>
                   <span class="entry-type-option__desc">Match individual field values</span>
@@ -78,7 +78,7 @@
                 @change="updateType('aggregate')"
               />
               <div class="entry-type-option__content">
-                <span class="entry-type-option__icon">📊</span>
+                <span class="entry-type-option__icon"><img :src="ICON_URLS.aggregate" class="entry-type-icon-img" /></span>
                 <div>
                   <span class="entry-type-option__title">Aggregate</span>
                   <span class="entry-type-option__desc">Calculate totals, counts, or averages</span>
@@ -235,6 +235,9 @@ import {
   PolarisSelect,
   PolarisTextField,
 } from 'polaris-weweb-styles/components';
+
+const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
+const ICON_URLS = { simple: ICON_BASE + '/icon_No conditions defined.svg', aggregate: ICON_BASE + '/icon_No conditions defined.svg' };
 
 const SIMPLE_OPERATORS = {
   string: [
@@ -519,6 +522,7 @@ export default {
       updateAudienceValue,
       updateTimeRangeValue,
       updateTimeRangeUnit,
+      ICON_URLS,
     };
   },
 };
@@ -618,6 +622,12 @@ export default {
     color: var(--p-color-text-secondary);
     margin-top: 1px;
   }
+}
+
+.entry-type-icon-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .conditions-list {

@@ -195,7 +195,7 @@
         <div v-else class="members-empty">
           <PolarisEmptyState
             heading="No members yet"
-            icon="👤"
+            :icon="svgIcon('No audiences yet', 32)"
             compact
           >
             {{ audience?.is_active
@@ -222,6 +222,9 @@ import {
   PolarisCheckbox,
   PolarisEmptyState,
 } from 'polaris-weweb-styles/components';
+
+const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
+const svgIcon = (name, size = 48) => `<img src="${ICON_BASE}/icon_${name}.svg" style="width:${size}px;height:${size}px;object-fit:contain" />`;
 
 export default {
   name: 'AudienceDetail',
@@ -345,6 +348,7 @@ export default {
       loadMore,
       handleToggleConfirm,
       handleDeleteConfirm,
+      svgIcon,
     };
   },
 };

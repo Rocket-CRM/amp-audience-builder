@@ -84,7 +84,7 @@
 
             <!-- Empty state -->
             <div v-if="!conditionGroups.length" class="conditions-empty">
-              <div class="conditions-empty__icon">🎯</div>
+              <div class="conditions-empty__icon"><img :src="ICON_URLS.no_conditions" class="conditions-empty__img" /></div>
               <PolarisText variant="headingSm">No conditions defined</PolarisText>
               <PolarisText variant="bodySm" color="subdued">
                 Add at least one condition group to define who belongs in this audience.
@@ -120,6 +120,9 @@ import {
   PolarisBanner,
 } from 'polaris-weweb-styles/components';
 import ConditionGroupCard from './ConditionGroupCard.vue';
+
+const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
+const ICON_URLS = { no_conditions: ICON_BASE + '/icon_No conditions defined.svg' };
 
 export default {
   name: 'AudienceBuilder',
@@ -328,6 +331,7 @@ export default {
       updateGroup,
       handleSave,
       handleCancel,
+      ICON_URLS,
     };
   },
 };
@@ -412,6 +416,12 @@ export default {
 
   &__icon {
     font-size: 28px;
+  }
+
+  &__img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
   }
 }
 

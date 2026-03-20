@@ -98,7 +98,7 @@
 
     <!-- Empty State -->
     <div v-else class="list-empty">
-      <PolarisEmptyState heading="No audiences yet" icon="👥">
+      <PolarisEmptyState heading="No audiences yet" :icon="svgIcon('No audiences yet')">
         Create your first audience to start segmenting users based on conditions.
         <template #actions>
           <PolarisButton variant="primary" @click="$emit('create')">Create audience</PolarisButton>
@@ -116,6 +116,9 @@ import {
   PolarisBadge,
   PolarisEmptyState,
 } from 'polaris-weweb-styles/components';
+
+const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
+const svgIcon = (name, size = 48) => `<img src="${ICON_BASE}/icon_${name}.svg" style="width:${size}px;height:${size}px;object-fit:contain" />`;
 
 export default {
   name: 'AudienceList',
@@ -137,7 +140,7 @@ export default {
     const formatNumber = (num) => { if (num == null) return '0'; return Number(num).toLocaleString(); };
     const confirmDelete = (audience) => { confirmDeleteId.value = null; emit('delete', audience); };
     const confirmToggle = (audience) => { confirmActivateId.value = null; emit('toggle-status', audience); };
-    return { safeAudiences, confirmDeleteId, confirmActivateId, formatDate, formatNumber, confirmDelete, confirmToggle };
+    return { safeAudiences, confirmDeleteId, confirmActivateId, formatDate, formatNumber, confirmDelete, confirmToggle, svgIcon };
   },
 };
 </script>

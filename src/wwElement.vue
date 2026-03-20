@@ -51,15 +51,15 @@
     <div v-else class="editor-placeholder">
       <!-- wwEditor:start -->
       <div class="editor-placeholder__content">
-        <div class="editor-placeholder__icon">🎯</div>
+        <div class="editor-placeholder__icon"><img :src="ICON_URLS.entry" style="width:48px;height:48px;object-fit:contain" /></div>
         <PolarisText variant="headingMd">Audience Builder</PolarisText>
         <PolarisText variant="bodySm" color="subdued">
           Bind the <strong>Auth Token (JWT)</strong> in the settings panel to get started.
         </PolarisText>
         <div class="editor-placeholder__badges">
-          <PolarisBadge variant="info">📋 List</PolarisBadge>
-          <PolarisBadge variant="success">🛠 Builder</PolarisBadge>
-          <PolarisBadge variant="attention">👥 Detail</PolarisBadge>
+          <PolarisBadge variant="info">List</PolarisBadge>
+          <PolarisBadge variant="success">Builder</PolarisBadge>
+          <PolarisBadge variant="attention">Detail</PolarisBadge>
         </div>
       </div>
       <!-- wwEditor:end -->
@@ -80,6 +80,9 @@ import AudienceDetail from './components/AudienceDetail.vue';
 
 const SUPABASE_URL = 'https://wkevmsedchftztoolkmi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZXZtc2VkY2hmdHp0b29sa21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1MTM2OTgsImV4cCI6MjA2NjA4OTY5OH0.bd8ELGtX8ACmk_WCxR_tIFljwyHgD3YD4PdBDpD-kSM';
+
+const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
+const ICON_URLS = { entry: ICON_BASE + '/icon_No conditions defined.svg' };
 
 export default {
   components: {
@@ -324,6 +327,7 @@ export default {
       handleBackToList, handleCreateNew, handleEdit, handleViewDetail,
       handleSave, handleToggleStatus, handleDelete, handleDeleteFromDetail,
       handleRefresh, handleLoadMembers,
+      ICON_URLS,
     };
   },
 };
