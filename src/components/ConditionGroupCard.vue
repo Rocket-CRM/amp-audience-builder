@@ -237,7 +237,7 @@ import {
 } from 'polaris-weweb-styles/components';
 
 const ICON_BASE = 'https://wkevmsedchftztoolkmi.supabase.co/storage/v1/object/public/default%20images';
-const ICON_URLS = { simple: ICON_BASE + '/icon_No conditions defined.svg', aggregate: ICON_BASE + '/icon_No conditions defined.svg' };
+const ICON_URLS = { simple: `${ICON_BASE}/icon_Earn Factor.svg`, aggregate: `${ICON_BASE}/icon_Earn Factor.svg` };
 
 const SIMPLE_OPERATORS = {
   string: [
